@@ -1,0 +1,12 @@
+[project]
+name = "entrevistas-bachillerato"
+version = "0.1.0"
+description = "Sistema para calificación de entrevistas de bachillerato"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+    "pydantic[email]>=2.11.3",
+    "python-dotenv>=1.1.0",
+    "sqlmodel>=0.0.24",
+]
