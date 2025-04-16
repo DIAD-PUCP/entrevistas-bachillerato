@@ -31,11 +31,8 @@ class UsuarioUpdate(UsuarioBase):
 class Usuario(UsuarioBase, table=True):
     hashed_password: str
     salt: str
-
-
-class Calificador(Usuario):
     fichas: list["FichaCalificacion"] = Relationship(
-        back_populates='ficha_calificacion')
+        back_populates='calificador')
 
 
 class Evaluado(SQLModel, table=True):
@@ -49,7 +46,7 @@ class Evaluado(SQLModel, table=True):
     colegio: str
     ensayo: str
     fichas: list["FichaCalificacion"] = Relationship(
-        back_populates='ficha_calificacion')
+        back_populates='evaluado')
 
 
 class FichaCalificacionBase(SQLModel):
@@ -64,5 +61,5 @@ class FichaCalificacionBase(SQLModel):
 
 
 class FichaCalificacion(FichaCalificacionBase, table=True):
-    calificador: Calificador = Relationship(back_populates='usuario')
-    evaluado: Evaluado = Relationship(back_populates='evaluado')
+    calificador: Usuario = Relationship(back_populates='fichas')
+    evaluado: Evaluado = Relationship(back_populates='fichas')
