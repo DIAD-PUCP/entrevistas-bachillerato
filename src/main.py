@@ -61,7 +61,7 @@ def nuevo_usuario(usuario: Annotated[models.UsuarioCreate, Form()], db: Session 
     user = models.Usuario.model_validate(user_data)
     db.add(user)
     db.commit()
-    return RedirectResponse(f"/usuario/{user.id}",status_code=200)
+    return RedirectResponse(f"/usuario/{user.id}",status_code=303)
 
 
 @app.patch("/usuario/{codigo}", response_class=HTMLResponse)
