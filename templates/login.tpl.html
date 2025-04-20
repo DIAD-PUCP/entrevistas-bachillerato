@@ -1,0 +1,20 @@
+{% extends "base.tpl.html" %}
+{% block content %}
+<form id="login" hx-post="/login{% if target %}?target={{target}}{% endif %}" hx-target="body" hx-swap="outerHTML">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="usuario" class="form-label">Email:</label>
+            <input id="usuario" class="form-control" type="usuario" name="usuario" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="password" class="form-label">Password:</label>
+            <input id="password" class="form-control" type="password" name="password" required>
+        </div>
+    </div>
+</form>
+<div class="container d-flex justify-content-center">
+    <button id="crear" class="my-4 btn btn-primary" form="login">Iniciar sesión</button>
+</div>
+{% endblock %}

@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
+from typing import Annotated, Optional
 import json
 import os
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.concurrency import asynccontextmanager
-from fastapi.responses import HTMLResponse
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
@@ -26,7 +25,6 @@ connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = os.getenv('SECRET_KEY', "")
 ALGORITHM = os.getenv('ALGORITHM', "HS256")
@@ -68,11 +66,13 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return encoded_jwt
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_session)):
+async def get_current_user(
+    token: Annotated[Optional[str], Cookie()] = None,
+    db: Session = Depends(get_session)
+) -> models.Usuario:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        detail="Could not validate credentials"
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -90,7 +90,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
 
 async def get_current_active_user(
     current_user: Annotated[models.Usuario, Depends(get_current_user)],
-):
+) -> models.Usuario:
     if not current_user.activo:
         raise HTTPException(status_code=400, detail="Usuario inactivo")
     return current_user
@@ -118,29 +118,80 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-@app.post("/token")
-async def login_for_access_token(login_data: Annotated[models.LoginData, Form()], db: Session = Depends(get_session)) -> Token:
+class AuthException(Exception):
+    pass
+
+
+@app.exception_handler(AuthException)
+async def auth_exception_handler(request: Request, exc: AuthException) -> RedirectResponse:
+    return RedirectResponse(
+        f'/login?target={request.url.path}',
+        status_code=301,
+        headers={
+            'HX-Trigger': json.dumps({
+                'showMessage': {
+                    'text': 'Es necesario iniciar sesión \n' + str(exc),
+                    'type': 'danger'
+                }
+            })
+        }
+    )
+
+
+@app.get('/login', response_class=HTMLResponse)
+async def login(request: Request, target: Optional[str] = None):
+    return templates.TemplateResponse('login.tpl.html', {"request": request, "target": target})
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def login_for_access_token(
+    request: Request,
+    login_data: Annotated[models.LoginData, Form()],
+    target: Annotated[str, Query()] = '/',
+    db: Session = Depends(get_session)
+) -> Token:
     user = authenticate_user(db, login_data.usuario, login_data.password)
     if not user:
-        raise HTTPException(
+        return templates.TemplateResponse(
+            'login.tpl.html',
+            {"request": request, "target": target},
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={
+                'HX-Trigger': json.dumps({
+                    'showMessage': {
+                        'text': 'Usuario o contraseña incorrectos',
+                        'type': 'success'
+                    }
+                })
+            }
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+    response = HTMLResponse(
+        headers={
+            'HX-Redirect': target
+        }
+    )
+    response.set_cookie(key="token", value=access_token)
+    return response
+
+
+@app.get("/logout", response_class=RedirectResponse)
+async def logout():
+    response = RedirectResponse('/login', status_code=status.HTTP_302_FOUND)
+    response.set_cookie(key='token', value='', expires=-1)
+    return response
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request):
+async def index(request: Request):
     return templates.TemplateResponse("base.tpl.html", {"request": request})
 
 
 @app.get("/usuario/{id}", response_class=HTMLResponse)
-def get_usuario(request: Request, id: str, db: Session = Depends(get_session)):
+async def get_usuario(request: Request, id: str, db: Session = Depends(get_session)):
     if id == 'nuevo':
         usuario = None
     else:
@@ -149,7 +200,11 @@ def get_usuario(request: Request, id: str, db: Session = Depends(get_session)):
 
 
 @app.post("/usuario/nuevo", response_class=HTMLResponse)
-def nuevo_usuario(request: Request, usuario: Annotated[models.UsuarioCreate, Form()], db: Session = Depends(get_session)):
+async def nuevo_usuario(
+    request: Request,
+    usuario: Annotated[models.UsuarioCreate, Form()],
+    db: Session = Depends(get_session)
+):
     user = crud.create_usuario(db, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
@@ -167,7 +222,12 @@ def nuevo_usuario(request: Request, usuario: Annotated[models.UsuarioCreate, For
 
 
 @app.patch("/usuario/{id}", response_class=HTMLResponse)
-def actualizar_usuario(request: Request, id: str, usuario: Annotated[models.UsuarioUpdate, Form()], db: Session = Depends(get_session)):
+async def actualizar_usuario(
+    request: Request,
+    id: str,
+    usuario: Annotated[models.UsuarioUpdate, Form()],
+    db: Session = Depends(get_session)
+):
     crud.update_usuario(db, id, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",

@@ -33,15 +33,12 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script>
-        const toastElList = document.querySelectorAll('.toast');
-        const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, {}));
-
-        const toastElement = document.getElementById("toast");
-        const toastBody = document.getElementById("toast-body");
-
-        const toast = new bootstrap.Toast(toastElement, { delay: 2000 });
-
         htmx.on("showMessage", e => {
+            const toastElement = document.getElementById("toast");
+            const toastBody = document.getElementById("toast-body");
+    
+            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+            
             //toastElement.classList.add(`bg-${e.detail['type']}`);
             toastBody.innerText = e.detail['text'];
             toast.show();
