@@ -9,7 +9,7 @@ class UsuarioBase(SQLModel):
     apellido_paterno: str
     apellido_materno: str
     email: EmailStr
-    estado: str = 'Activo'
+    activo: bool = False
     perfil: str = 'Calificador'
 
 
@@ -18,19 +18,17 @@ class UsuarioCreate(UsuarioBase):
 
 
 class UsuarioUpdate(UsuarioBase):
-    id: Optional[str] = None
     nombres: Optional[str] = None
     apellido_paterno: Optional[str] = None
     apellido_materno: Optional[str] = None
     email: Optional[EmailStr] = None
-    estado: Optional[str] = None
+    activo: bool = False
     perfil: Optional[str] = None
     password: Optional[str] = None
 
 
 class Usuario(UsuarioBase, table=True):
     hashed_password: str
-    salt: str
     fichas: list["FichaCalificacion"] = Relationship(
         back_populates='calificador')
 

@@ -1,11 +1,14 @@
 {% extends "base.tpl.html" %}
 {% block content %}
 <form id="usuario" 
-    {% if usuario is none %}
+    {% if not usuario %}
     hx-post="/usuario/nuevo"
     {% else %}
     hx-patch="/usuario/{{usuario.id}}"
     {% endif %}
+    hx-target="this"
+    hx-swap="outerHTML"
+    hx-select="#usuario"
 >
     <div class="row mb-3">
         <div class="col-md-6">
@@ -40,7 +43,7 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="password" class="form-label">Password:</label>
-            <input id="password" class="form-control" type="password" name="password" value="" {% if not usuario %}required{% endif %}>
+            <input id="password" class="form-control" type="password" name="password" {% if not usuario %}required{% endif %}>
         </div>
     </div>
     <div class="row mb-3">
@@ -57,13 +60,13 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="estado" name="estado" value="True" {% if not usuario or (usuario.estado == 'Activo')%}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" role="switch" id="activo" name="activo" value="True" {% if not usuario or (usuario.activo)%}checked{% endif %}>
                 <label class="form-check-label" for="estado">Activo</label>
             </div>
         </div>
     </div>
     <div class="container d-flex justify-content-center">
-        {% if usuario is none %}
+        {% if not usuario%}
         <button id="crear" class="my-4 btn btn-primary" form="usuario">Crear</button>
         {% else %}
         <button id="guardar" class="my-4 btn btn-primary" form="usuario">Guardar</button>

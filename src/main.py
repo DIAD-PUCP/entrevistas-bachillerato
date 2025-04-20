@@ -1,12 +1,14 @@
-from typing import Annotated, Optional
+from typing import Annotated
+import json
 from fastapi import Depends, FastAPI, Form, Request
 from fastapi.concurrency import asynccontextmanager
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import SQLModel, Session, create_engine
 from dotenv import load_dotenv
 from . import models
+from . import crud
 
 import os
 
@@ -52,19 +54,36 @@ def get_usuario(request: Request, id: str, db: Session = Depends(get_session)):
     return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario})
 
 
-@app.post("/usuario/nuevo", response_class=RedirectResponse)
-def nuevo_usuario(usuario: Annotated[models.UsuarioCreate, Form()], db: Session = Depends(get_session)):
-    user_data = usuario.model_dump()
-    user_data['hashed_password'] = user_data['password']
-    user_data['salt'] = "salt"
-    print(user_data)
-    user = models.Usuario.model_validate(user_data)
-    db.add(user)
-    db.commit()
-    return RedirectResponse(f"/usuario/{user.id}",status_code=303)
+@app.post("/usuario/nuevo", response_class=HTMLResponse)
+def nuevo_usuario(request: Request, usuario: Annotated[models.UsuarioCreate, Form()], db: Session = Depends(get_session)):
+    user = crud.create_usuario(db, usuario)
+    return templates.TemplateResponse(
+        "usuario.tpl.html",
+        context={"request": request, "usuario": user},
+        headers={
+            'HX-Trigger': json.dumps({
+                'showMessage': {
+                    'text': f'Se creo el usuario {user.id}',
+                    'type': 'success'
+                }
+            }),
+            'HX-Push-Url': f'/usuario/{user.id}'
+        }
+    )
 
 
-@app.patch("/usuario/{codigo}", response_class=HTMLResponse)
-def actualizar_usuario(request: Request, usuario: Annotated[models.UsuarioUpdate, Form()]):
-    print(usuario)
-    return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario})
+@app.patch("/usuario/{id}", response_class=HTMLResponse)
+def actualizar_usuario(request: Request, id: str, usuario: Annotated[models.UsuarioUpdate, Form()], db: Session = Depends(get_session)):
+    crud.update_usuario(db, id, usuario)
+    return templates.TemplateResponse(
+        "usuario.tpl.html",
+        context={"request": request, "usuario": usuario},
+        headers={
+            'HX-Trigger': json.dumps({
+                'showMessage': {
+                    'text': 'Se actualizó el usuario',
+                    'type': 'success'
+                }
+            })
+        }
+    )
