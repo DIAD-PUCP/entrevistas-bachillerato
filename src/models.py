@@ -1,7 +1,11 @@
 from typing import Annotated, Optional
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import EmailStr
+from pydantic import BaseModel, EmailStr
 
+
+class LoginData(BaseModel):
+    usuario: str
+    password: str
 
 class UsuarioBase(SQLModel):
     id: Annotated[str, Field(primary_key=True)]

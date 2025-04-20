@@ -1,16 +1,21 @@
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 import json
-from fastapi import Depends, FastAPI, Form, Request
+import os
+from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel
 from sqlmodel import SQLModel, Session, create_engine
 from dotenv import load_dotenv
+from starlette import status
 from . import models
 from . import crud
-
-import os
 
 load_dotenv()
 
@@ -19,6 +24,22 @@ sqlite_url = f"sqlite:///{sqlite_file_name}"
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+SECRET_KEY = os.getenv('SECRET_KEY', "")
+ALGORITHM = os.getenv('ALGORITHM', "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    user_id: str | None = None
 
 
 def create_db_and_tables():
@@ -35,9 +56,74 @@ async def lifespan(app: FastAPI):
     create_db_and_tables()
     yield
 
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_session)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+        token_data = TokenData(user_id=user_id)
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+    user = crud.get_usuario(db, token_data.user_id)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+def verify_password(plain_password, hashed_password) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password) -> str:
+    return pwd_context.hash(password)
+
+
+def authenticate_user(db: Session, email: str, password: str):
+    user = crud.get_usuario_by_email(db, email)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+
+@app.post("/token")
+async def login_for_access_token(login_data: Annotated[models.LoginData, Form()], db: Session = Depends(get_session)) -> Token:
+    user = authenticate_user(db, login_data.usuario, login_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.id}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @app.get("/", response_class=HTMLResponse)

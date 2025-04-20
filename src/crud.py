@@ -1,6 +1,6 @@
 import os
 from passlib.hash import bcrypt
-from sqlmodel import Session
+from sqlmodel import Session, select
 from . import models
 
 SECRET_KEY = os.getenv('SECRET_KEY', "")
@@ -8,6 +8,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', "")
 
 def get_usuario(db: Session, id: str) -> models.Usuario:
     return db.get(models.Usuario, id)
+
+def get_usuario_by_email(db: Session, email: str) -> models.Usuario:
+    return db.exec(
+        select(models.Usuario)
+        .where(models.Usuario.email == email)
+    ).first()
 
 
 def create_usuario(db: Session, usuario: models.UsuarioCreate) -> models.Usuario:
