@@ -88,6 +88,14 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
     return user
 
 
+async def get_current_active_user(
+    current_user: Annotated[models.Usuario, Depends(get_current_user)],
+):
+    if not current_user.activo:
+        raise HTTPException(status_code=400, detail="Usuario inactivo")
+    return current_user
+
+
 def verify_password(plain_password, hashed_password) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
