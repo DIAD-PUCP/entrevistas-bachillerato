@@ -226,15 +226,66 @@ async def actualizar_usuario(
     )
 
 
-@app.delete("/usuario/{id}", response_class=RedirectResponse)
+@app.delete("/usuario/{id}", response_class=HTMLResponse)
 async def eliminar_usuario(
-    request: Request,
     id: str,
     db: Session = Depends(get_session)
 ):
     crud.delete_usuario(db, id)
     response = HTMLResponse(
         headers={'HX-Redirect': '/usuarios'},
+        status_code=200
+    )
+    return response
+
+
+@app.get("/evaluado/{id}", response_class=HTMLResponse)
+async def get_evaluado(request: Request, id: str, db: Session = Depends(get_session)):
+    if id == 'nuevo':
+        usuario = None
+    else:
+        usuario = db.get(models.Usuario, id)
+    return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario})
+
+
+@app.post("/evaluado/nuevo", response_class=HTMLResponse)
+async def nuevo_evaluado(
+    request: Request,
+    evaluado: Annotated[models.Evaluado, Form()],
+    db: Session = Depends(get_session)
+):
+    user = crud.create_evaluado(db, evaluado)
+    return templates.TemplateResponse(
+        "evaluado.tpl.html",
+        context={"request": request, "evaluado": evaluado},
+        headers=show_message(f'Se creo el evaluado {evaluado.id}', 'success') |
+        {'HX-Push-Url': f'/evaluado/{evaluado.id}'}
+    )
+
+
+@app.patch("/evaluado/{id}", response_class=HTMLResponse)
+async def actualizar_evaluado(
+    request: Request,
+    id: str,
+    evaluado: Annotated[models.Evaluado, Form()],
+    db: Session = Depends(get_session)
+):
+    crud.update_evaluado(db, id, evaluado)
+    return templates.TemplateResponse(
+        "evaluado.tpl.html",
+        context={"request": request, "evaluado": evaluado},
+        headers=show_message('Se actualizó el evaluado', 'success')
+    )
+
+
+@app.delete("/evaluado/{id}", response_class=HTMLResponse)
+async def eliminar_evaluado(
+    id: str,
+    db: Session = Depends(get_session)
+):
+    crud.delete_evaluado(db, id)
+    response = HTMLResponse(
+        headers={'HX-Redirect': '/evaluados'},
         status_code=200
     )
     return response
