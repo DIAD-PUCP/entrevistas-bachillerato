@@ -193,6 +193,8 @@ async def get_usuario(request: Request, id: str, db: Session = Depends(get_sessi
         usuario = None
     else:
         usuario = db.get(models.Usuario, id)
+        if not usuario:
+            raise HTTPException(status_code=404, detail="No se encontró usuario")
     return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario})
 
 
@@ -218,10 +220,10 @@ async def actualizar_usuario(
     usuario: Annotated[models.UsuarioUpdate, Form()],
     db: Session = Depends(get_session)
 ):
-    crud.update_usuario(db, id, usuario)
+    user = crud.update_usuario(db, id, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
-        context={"request": request, "usuario": usuario},
+        context={"request": request, "usuario": user},
         headers=show_message('Se actualizó el usuario', 'success')
     )
 
@@ -245,6 +247,8 @@ async def get_evaluado(request: Request, id: str, db: Session = Depends(get_sess
         evaluado = None
     else:
         evaluado = db.get(models.Usuario, id)
+        if not evaluado:
+            raise HTTPException(status_code=404, detail="No se encontró evaluado")
     return templates.TemplateResponse("usuario.tpl.html", {"request": request, "evaluado": evaluado})
 
 
@@ -296,6 +300,8 @@ async def get_ficha(request: Request, id: str, db: Session = Depends(get_session
         ficha = None
     else:
         ficha = db.get(models.FichaCalificacion, id)
+        if not ficha:
+            raise HTTPException(status_code=404, detail="No se encontró ficha")
     return templates.TemplateResponse("ficha.tpl.html", {"request": request, "ficha": ficha})
 
 
