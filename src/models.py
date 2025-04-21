@@ -7,12 +7,13 @@ class LoginData(BaseModel):
     usuario: str
     password: str
 
+
 class UsuarioBase(SQLModel):
     id: Annotated[str, Field(primary_key=True)]
     nombres: str
     apellido_paterno: str
     apellido_materno: str
-    email: EmailStr
+    email: Annotated[EmailStr, Field(unique=True, index=True)]
     activo: bool = False
     perfil: str = 'Calificador'
 
