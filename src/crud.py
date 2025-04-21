@@ -1,15 +1,23 @@
 import os
+from typing import Optional
 from fastapi import HTTPException
 from passlib.hash import bcrypt
 from sqlmodel import Session, select
 from . import models
 
 
-def get_usuario(db: Session, id: str) -> models.Usuario:
+def get_usuario(db: Session, id: str) -> Optional[models.Usuario]:
     return db.get(models.Usuario, id)
 
 
-def get_usuario_by_email(db: Session, email: str) -> models.Usuario:
+def get_usuarios_activos(db: Session) -> list[models.Usuario]:
+    return list(db.exec(
+        select(models.Usuario)
+        .where(models.Usuario.activo == True)
+    ).all())
+
+
+def get_usuario_by_email(db: Session, email: str) -> Optional[models.Usuario]:
     return db.exec(
         select(models.Usuario)
         .where(models.Usuario.email == email)
@@ -46,11 +54,17 @@ def delete_usuario(db: Session, id: str) -> None:
     db.commit()
 
 
-def get_evaluado(db: Session, id: str) -> models.Evaluado:
+def get_evaluado(db: Session, id: str) -> Optional[models.Evaluado]:
     return db.get(models.Evaluado, id)
 
 
-def get_evaluado_by_doc(db: Session, doc: str) -> models.Evaluado:
+def get_evaluados(db: Session) -> list[models.Evaluado]:
+    return list(db.exec(
+        select(models.Evaluado)
+    ).all())
+
+
+def get_evaluado_by_doc(db: Session, doc: str) -> Optional[models.Evaluado]:
     return db.exec(
         select(models.Evaluado)
         .where(models.Evaluado.documento_identidad == doc)
@@ -84,7 +98,7 @@ def delete_evaluado(db: Session, id: str) -> None:
     db.commit()
 
 
-def get_ficha(db: Session, id: str) -> models.FichaCalificacion:
+def get_ficha(db: Session, id: str) -> Optional[models.FichaCalificacion]:
     return db.get(models.FichaCalificacion, id)
 
 
@@ -117,6 +131,8 @@ def delete_ficha(db: Session, id: str) -> None:
 
 def calificar_ficha(db: Session, id: str, ficha: models.FichaCalificacionBase) -> models.FichaCalificacion:
     f = db.get(models.FichaCalificacion, id)
+    if not f:
+        raise HTTPException(status_code=404, detail="No se encontró ficha")
     ficha_data = ficha.model_dump(exclude_unset=True)
     f.sqlmodel_update(ficha_data)
     db.add(f)

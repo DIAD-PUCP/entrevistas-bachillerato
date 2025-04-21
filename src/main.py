@@ -37,7 +37,7 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    user_id: str | None = None
+    user_id: str
 
 
 def create_db_and_tables():
@@ -74,14 +74,16 @@ async def get_current_user(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials"
     )
+    if not token:
+        raise credentials_exception
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
         token_data = TokenData(user_id=user_id)
-    except jwt.InvalidTokenError:
-        raise credentials_exception
+    except jwt.InvalidTokenError as exc:
+        raise credentials_exception from exc
     user = crud.get_usuario(db, token_data.user_id)
     if user is None:
         raise credentials_exception
@@ -155,7 +157,7 @@ async def login_for_access_token(
     login_data: Annotated[models.LoginData, Form()],
     target: Annotated[str, Query()] = '/',
     db: Session = Depends(get_session)
-) -> Token:
+):
     user = authenticate_user(db, login_data.usuario, login_data.password)
     if not user:
         return templates.TemplateResponse(
@@ -194,7 +196,8 @@ async def get_usuario(request: Request, id: str, db: Session = Depends(get_sessi
     else:
         usuario = db.get(models.Usuario, id)
         if not usuario:
-            raise HTTPException(status_code=404, detail="No se encontró usuario")
+            raise HTTPException(
+                status_code=404, detail="No se encontró usuario")
     return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario})
 
 
@@ -248,8 +251,11 @@ async def get_evaluado(request: Request, id: str, db: Session = Depends(get_sess
     else:
         evaluado = db.get(models.Evaluado, id)
         if not evaluado:
-            raise HTTPException(status_code=404, detail="No se encontró evaluado")
-    return templates.TemplateResponse("evaluado.tpl.html", {"request": request, "evaluado": evaluado})
+            raise HTTPException(
+                status_code=404, detail="No se encontró evaluado")
+    return templates.TemplateResponse(
+        "evaluado.tpl.html", {"request": request, "evaluado": evaluado}
+    )
 
 
 @app.post("/evaluado/nuevo", response_class=HTMLResponse)
@@ -294,6 +300,7 @@ async def eliminar_evaluado(
     )
     return response
 
+
 @app.get("/ficha/{id}", response_class=HTMLResponse)
 async def get_ficha(request: Request, id: str, db: Session = Depends(get_session)):
     if id == 'nueva':
@@ -302,7 +309,14 @@ async def get_ficha(request: Request, id: str, db: Session = Depends(get_session
         ficha = db.get(models.FichaCalificacion, id)
         if not ficha:
             raise HTTPException(status_code=404, detail="No se encontró ficha")
-    return templates.TemplateResponse("ficha.tpl.html", {"request": request, "ficha": ficha})
+    usuarios = crud.get_usuarios_activos(db)
+    evaluados = crud.get_evaluados(db)
+    return templates.TemplateResponse("ficha.tpl.html", {
+        "request": request,
+        "ficha": ficha,
+        "usuarios": usuarios,
+        "evaluados": evaluados,
+    })
 
 
 @app.post("/ficha/nueva", response_class=HTMLResponse)
@@ -311,10 +325,17 @@ async def nueva_ficha(
     ficha: Annotated[models.FichaCalificacion, Form()],
     db: Session = Depends(get_session)
 ):
-    f = crud.create_evaluado(db, ficha)
+    f = crud.create_ficha(db, ficha)
+    usuarios = crud.get_usuarios_activos(db)
+    evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
         "ficha.tpl.html",
-        context={"request": request, "ficha": f},
+        context={
+            "request": request,
+            "ficha": f,
+            "usuarios": usuarios,
+            "evaluados": evaluados,
+        },
         headers=show_message(f'Se creo la ficha {f.id}', 'success') |
         {'HX-Push-Url': f'/ficha/{f.id}'}
     )
@@ -328,9 +349,16 @@ async def actualizar_ficha(
     db: Session = Depends(get_session)
 ):
     f = crud.update_ficha(db, id, ficha)
+    usuarios = crud.get_usuarios_activos(db)
+    evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
         "ficha.tpl.html",
-        context={"request": request, "ficha": f},
+        context={
+            "request": request,
+            "ficha": f,
+            "usuarios": usuarios,
+            "evaluados": evaluados,
+        },
         headers=show_message('Se actualizó la ficha', 'success')
     )
 
