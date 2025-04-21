@@ -70,7 +70,7 @@
         <button id="crear" class="my-4 btn btn-primary" form="usuario">Crear</button>
         {% else %}
         <button id="guardar" class="m-4 btn btn-primary" form="usuario">Guardar</button>
-        <button id="eliminar" c hx-delete="/usuario/{{usuario.id}}" hx-target="body" hx-swap="outerHTML" class="my-4 btn btn-danger">Eliminar</button>
+        <button id="eliminar" hx-delete="/usuario/{{usuario.id}}" hx-target="body" hx-swap="outerHTML" class="my-4 btn btn-danger">Eliminar</button>
         {% endif %}
     </div>
 </form>
