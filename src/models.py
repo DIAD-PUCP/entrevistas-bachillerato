@@ -40,7 +40,7 @@ class Usuario(UsuarioBase, table=True):
 
 class Evaluado(SQLModel, table=True):
     id: str = Field(primary_key=True)
-    documento_identidad: str
+    documento_identidad: Annotated[str, Field(unique=True, index=True)]
     nombres: str
     apellido_paterno: str
     apellido_materno: str
