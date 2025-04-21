@@ -113,6 +113,15 @@ def authenticate_user(db: Session, email: str, password: str):
     return user
 
 
+def show_message(text: str, type: str) -> dict[str, str]:
+    return {'HX-Trigger': json.dumps({
+        'showMessage': {
+            'text': text,
+            'type': type
+        }
+    })}
+
+
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -124,17 +133,14 @@ class AuthException(Exception):
 
 @app.exception_handler(AuthException)
 async def auth_exception_handler(request: Request, exc: AuthException) -> RedirectResponse:
+    headers = show_message(
+        'Es necesario iniciar sesión \n' + str(exc),
+        'danger'
+    )
     return RedirectResponse(
         f'/login?target={request.url.path}',
         status_code=301,
-        headers={
-            'HX-Trigger': json.dumps({
-                'showMessage': {
-                    'text': 'Es necesario iniciar sesión \n' + str(exc),
-                    'type': 'danger'
-                }
-            })
-        }
+        headers=headers
     )
 
 
@@ -156,23 +162,14 @@ async def login_for_access_token(
             'login.tpl.html',
             {"request": request, "target": target},
             status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={
-                'HX-Trigger': json.dumps({
-                    'showMessage': {
-                        'text': 'Usuario o contraseña incorrectos',
-                        'type': 'success'
-                    }
-                })
-            }
+            headers=show_message('Usuario o contraseña incorrectos', 'danger')
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
     response = HTMLResponse(
-        headers={
-            'HX-Redirect': target
-        }
+        headers={'HX-Redirect': target}
     )
     response.set_cookie(key="token", value=access_token)
     return response
@@ -209,15 +206,9 @@ async def nuevo_usuario(
     return templates.TemplateResponse(
         "usuario.tpl.html",
         context={"request": request, "usuario": user},
-        headers={
-            'HX-Trigger': json.dumps({
-                'showMessage': {
-                    'text': f'Se creo el usuario {user.id}',
-                    'type': 'success'
-                }
-            }),
-            'HX-Push-Url': f'/usuario/{user.id}'
-        }
+        headers=
+            show_message(f'Se creo el usuario {user.id}','success') |
+            {'HX-Push-Url': f'/usuario/{user.id}'}
     )
 
 
@@ -232,12 +223,5 @@ async def actualizar_usuario(
     return templates.TemplateResponse(
         "usuario.tpl.html",
         context={"request": request, "usuario": usuario},
-        headers={
-            'HX-Trigger': json.dumps({
-                'showMessage': {
-                    'text': 'Se actualizó el usuario',
-                    'type': 'success'
-                }
-            })
-        }
+        headers=show_message('Se actualizó el usuario','success')
     )
