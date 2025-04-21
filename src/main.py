@@ -243,6 +243,14 @@ async def eliminar_usuario(
     )
     return response
 
+@app.get("/usuario/{id}/por-calificar", response_class=HTMLResponse)
+async def listado_por_calificar(request: Request, id: str, db: Session = Depends(get_session)):
+    usuario = crud.get_usuario(db,id)
+    return templates.TemplateResponse(
+        "listado-a-calificar.tpl.html",
+        context={"request":request, "usuario": usuario}
+    )
+
 
 @app.get("/evaluado/{id}", response_class=HTMLResponse)
 async def get_evaluado(request: Request, id: str, db: Session = Depends(get_session)):

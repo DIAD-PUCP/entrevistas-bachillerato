@@ -1,0 +1,30 @@
+{% extends "base.tpl.html" %}
+{% block content %}
+<div class="table-responsive">
+    <table class="table" hx-boost="true">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Apellido paterno</th>
+                <th>Apellido materno</th>
+                <th>Nombres</th>
+                <th>Especialidad</th>
+                <th>Entrevista</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ficha in usuario.fichas %}
+            {% set evaluado = ficha.evaluado%}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td>{{evaluado.apellido_paterno}}</td>
+                <td>{{evaluado.apellido_materno}}</td>
+                <td>{{evaluado.nombres}}</td>
+                <td>{{evaluado.carrera}}</td>
+                <td><a href="/ficha/{{ficha.id}}/calificar">Entrevista</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
