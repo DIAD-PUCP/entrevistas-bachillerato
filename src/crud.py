@@ -36,3 +36,27 @@ def update_usuario(db: Session, id: str, usuario: models.UsuarioUpdate) -> model
     user.sqlmodel_update(user_data)
     db.add(user)
     db.commit()
+
+def get_evaluado(db: Session, id: str) -> models.Evaluado:
+    return db.get(models.Evaluado, id)
+
+def get_evaluado_by_doc(db: Session, doc: str) -> models.Evaluado:
+    return db.exec(
+        select(models.Evaluado)
+        .where(models.Evaluado.documento_identidad == doc)
+    ).first()
+
+
+def create_evaluado(db: Session, evaluado: models.Evaluado) -> models.Evaluado:
+    evaluado_data = evaluado.model_dump()
+    evalua = models.Evaluado.model_validate(evaluado_data)
+    db.add(evalua)
+    db.commit()
+    return evalua
+
+def update_evaluado(db: Session, id: str, evaluado: models.Evaluado) -> models.Evaluado:
+    evalua = db.get(models.Evaluado, id)
+    evaluado_data = evaluado.model_dump(exclude_unset=True)
+    evalua.sqlmodel_update(evaluado_data)
+    db.add(evalua)
+    db.commit()
