@@ -13,7 +13,7 @@ def get_usuario(db: Session, id: str) -> Optional[models.Usuario]:
 def get_usuarios_activos(db: Session) -> list[models.Usuario]:
     return list(db.exec(
         select(models.Usuario)
-        .where(models.Usuario.activo is True)
+        .where(models.Usuario.activo == True)
     ).all())
 
 

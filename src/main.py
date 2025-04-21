@@ -243,12 +243,14 @@ async def eliminar_usuario(
     )
     return response
 
+
 @app.get("/usuario/{id}/por-calificar", response_class=HTMLResponse)
 async def listado_por_calificar(request: Request, id: str, db: Session = Depends(get_session)):
-    usuario = crud.get_usuario(db,id)
+    usuario = crud.get_usuario(db, id)
+    fichas_pendientes = [ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
     return templates.TemplateResponse(
         "listado-a-calificar.tpl.html",
-        context={"request":request, "usuario": usuario}
+        context={"request": request, "fichas": fichas_pendientes}
     )
 
 
@@ -382,3 +384,28 @@ async def eliminar_ficha(
         status_code=200
     )
     return response
+
+
+@app.get("/ficha/{id}/calificar", response_class=HTMLResponse)
+async def ver_calificar_ficha(
+    request: Request,
+    id: str,
+    db: Session = Depends(get_session)
+):
+    ficha = crud.get_ficha(db, id)
+    return templates.TemplateResponse(
+        'calificar.tpl.html',
+        context={'request': request, "ficha": ficha}
+    )
+
+
+@app.patch("/ficha/{id}/calificar", response_class=HTMLResponse)
+async def calificar_ficha(
+    id: str,
+    ficha: Annotated[models.FichaCalificacionBase, Form()],
+    db: Session = Depends(get_session)
+):
+    f = crud.calificar_ficha(db, id, ficha)
+    return HTMLResponse(
+        headers={'HX-Redirect': f'/usuario/{f.calificador.id}/por-calificar'},
+    )

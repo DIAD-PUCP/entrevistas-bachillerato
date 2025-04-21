@@ -13,7 +13,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for ficha in usuario.fichas %}
+            {% for ficha in fichas %}
             {% if not ficha.fecha_calificacion %}
             {% set evaluado = ficha.evaluado%}
             <tr>
@@ -25,6 +25,8 @@
                 <td><a href="/ficha/{{ficha.id}}/calificar">Entrevista</a></td>
             </tr>
             {% endif %}
+            {% else %}
+            <tr><td colspan="6" class="text-center"> No hay nada por calificar</td></tr>
             {% endfor %}
         </tbody>
     </table>
