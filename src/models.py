@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated, Optional
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel, EmailStr
@@ -59,6 +60,7 @@ class FichaCalificacionBase(SQLModel):
     criterio3: Optional[int] = None
     criterio4: Optional[int] = None
     comentario: Optional[str] = None
+    fecha_calificacion: Optional[datetime] = None
 
 
 class FichaCalificacion(FichaCalificacionBase, table=True):

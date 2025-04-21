@@ -1,4 +1,4 @@
-import os
+from datetime import datetime
 from typing import Optional
 from fastapi import HTTPException
 from passlib.hash import bcrypt
@@ -13,7 +13,7 @@ def get_usuario(db: Session, id: str) -> Optional[models.Usuario]:
 def get_usuarios_activos(db: Session) -> list[models.Usuario]:
     return list(db.exec(
         select(models.Usuario)
-        .where(models.Usuario.activo == True)
+        .where(models.Usuario.activo is True)
     ).all())
 
 
@@ -134,6 +134,7 @@ def calificar_ficha(db: Session, id: str, ficha: models.FichaCalificacionBase) -
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
     ficha_data = ficha.model_dump(exclude_unset=True)
+    ficha_data['fecha_calificacion'] = datetime.now()
     f.sqlmodel_update(ficha_data)
     db.add(f)
     db.commit()
