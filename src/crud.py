@@ -1,4 +1,5 @@
 import os
+from fastapi import HTTPException
 from passlib.hash import bcrypt
 from sqlmodel import Session, select
 from . import models
@@ -30,6 +31,8 @@ def create_usuario(db: Session, usuario: models.UsuarioCreate) -> models.Usuario
 
 def update_usuario(db: Session, id: str, usuario: models.UsuarioUpdate) -> models.Usuario:
     user = db.get(models.Usuario, id)
+    if not user:
+        raise HTTPException(status_code=404, detail="No se encontró usuario")
     user_data = usuario.model_dump(exclude_unset=True)
     if usuario.password != '':
         user_data['hashed_password'] = bcrypt.hash(
@@ -39,6 +42,14 @@ def update_usuario(db: Session, id: str, usuario: models.UsuarioUpdate) -> model
     db.add(user)
     db.commit()
     return user
+
+
+def delete_usuario(db: Session, id: str) -> None:
+    user = db.get(models.Usuario, id)
+    if not user:
+        raise HTTPException(status_code=404, detail="No se encontró usuario")
+    db.delete(user)
+    db.commit()
 
 
 def get_evaluado(db: Session, id: str) -> models.Evaluado:
@@ -62,11 +73,21 @@ def create_evaluado(db: Session, evaluado: models.Evaluado) -> models.Evaluado:
 
 def update_evaluado(db: Session, id: str, evaluado: models.Evaluado) -> models.Evaluado:
     evalua = db.get(models.Evaluado, id)
+    if not evalua:
+        raise HTTPException(status_code=404, detail="No se encontró evaluado")
     evaluado_data = evaluado.model_dump(exclude_unset=True)
     evalua.sqlmodel_update(evaluado_data)
     db.add(evalua)
     db.commit()
     return evalua
+
+
+def delete_evaluado(db: Session, id: str) -> None:
+    evalua = db.get(models.Evaluado, id)
+    if not evalua:
+        raise HTTPException(status_code=404, detail="No se encontró evaluado")
+    db.delete(evalua)
+    db.commit()
 
 
 def get_ficha(db: Session, id: str) -> models.FichaCalificacion:
@@ -83,11 +104,21 @@ def create_ficha(db: Session, ficha: models.FichaCalificacion) -> models.FichaCa
 
 def update_ficha(db: Session, id: str, ficha: models.FichaCalificacion) -> models.FichaCalificacion:
     f = db.get(models.FichaCalificacion, id)
+    if not f:
+        raise HTTPException(status_code=404, detail="No se encontró ficha")
     ficha_data = ficha.model_dump(exclude_unset=True)
     f.sqlmodel_update(ficha_data)
     db.add(f)
     db.commit()
     return f
+
+
+def delete_ficha(db: Session, id: str) -> None:
+    ficha = db.get(models.FichaCalificacion, id)
+    if not ficha:
+        raise HTTPException(status_code=404, detail="No se encontró ficha")
+    db.delete(ficha)
+    db.commit()
 
 
 def calificar_ficha(db: Session, id: str, ficha: models.FichaCalificacionBase) -> models.FichaCalificacion:

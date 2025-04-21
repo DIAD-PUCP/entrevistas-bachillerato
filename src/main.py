@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 import json
 import os
-from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request, Response
+from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -206,9 +206,8 @@ async def nuevo_usuario(
     return templates.TemplateResponse(
         "usuario.tpl.html",
         context={"request": request, "usuario": user},
-        headers=
-            show_message(f'Se creo el usuario {user.id}','success') |
-            {'HX-Push-Url': f'/usuario/{user.id}'}
+        headers=show_message(f'Se creo el usuario {user.id}', 'success') |
+        {'HX-Push-Url': f'/usuario/{user.id}'}
     )
 
 
@@ -223,5 +222,19 @@ async def actualizar_usuario(
     return templates.TemplateResponse(
         "usuario.tpl.html",
         context={"request": request, "usuario": usuario},
-        headers=show_message('Se actualizó el usuario','success')
+        headers=show_message('Se actualizó el usuario', 'success')
     )
+
+
+@app.delete("/usuario/{id}", response_class=RedirectResponse)
+async def eliminar_usuario(
+    request: Request,
+    id: str,
+    db: Session = Depends(get_session)
+):
+    crud.delete_usuario(db, id)
+    response = HTMLResponse(
+        headers={'HX-Redirect': '/usuarios'},
+        status_code=200
+    )
+    return response
