@@ -4,8 +4,6 @@ from passlib.hash import bcrypt
 from sqlmodel import Session, select
 from . import models
 
-SECRET_KEY = os.getenv('SECRET_KEY', "")
-
 
 def get_usuario(db: Session, id: str) -> models.Usuario:
     return db.get(models.Usuario, id)
@@ -20,9 +18,7 @@ def get_usuario_by_email(db: Session, email: str) -> models.Usuario:
 
 def create_usuario(db: Session, usuario: models.UsuarioCreate) -> models.Usuario:
     user_data = usuario.model_dump()
-    user_data['hashed_password'] = bcrypt.hash(
-        user_data['password']+SECRET_KEY
-    )
+    user_data['hashed_password'] = bcrypt.hash(user_data['password'])
     user = models.Usuario.model_validate(user_data)
     db.add(user)
     db.commit()
@@ -35,9 +31,7 @@ def update_usuario(db: Session, id: str, usuario: models.UsuarioUpdate) -> model
         raise HTTPException(status_code=404, detail="No se encontró usuario")
     user_data = usuario.model_dump(exclude_unset=True)
     if usuario.password != '':
-        user_data['hashed_password'] = bcrypt.hash(
-            user_data['password']+SECRET_KEY
-        )
+        user_data['hashed_password'] = bcrypt.hash(user_data['password'])
     user.sqlmodel_update(user_data)
     db.add(user)
     db.commit()
