@@ -246,10 +246,10 @@ async def get_evaluado(request: Request, id: str, db: Session = Depends(get_sess
     if id == 'nuevo':
         evaluado = None
     else:
-        evaluado = db.get(models.Usuario, id)
+        evaluado = db.get(models.Evaluado, id)
         if not evaluado:
             raise HTTPException(status_code=404, detail="No se encontró evaluado")
-    return templates.TemplateResponse("usuario.tpl.html", {"request": request, "evaluado": evaluado})
+    return templates.TemplateResponse("evaluado.tpl.html", {"request": request, "evaluado": evaluado})
 
 
 @app.post("/evaluado/nuevo", response_class=HTMLResponse)
