@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Optional
 import json
 import os
-from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request, Security
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -185,8 +185,8 @@ async def logout():
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse("base.tpl.html", {"request": request})
+async def index(request: Request, user: models.Usuario = Security(get_current_active_user)):
+    return templates.TemplateResponse("base.tpl.html", {"request": request, "user": user})
 
 
 @app.get("/usuario/{id}", response_class=HTMLResponse)
@@ -245,12 +245,18 @@ async def eliminar_usuario(
 
 
 @app.get("/usuario/{id}/por-calificar", response_class=HTMLResponse)
-async def listado_por_calificar(request: Request, id: str, db: Session = Depends(get_session)):
+async def listado_por_calificar(
+    request: Request,
+    id: str,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
     usuario = crud.get_usuario(db, id)
-    fichas_pendientes = [ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
+    fichas_pendientes = [
+        ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
     return templates.TemplateResponse(
         "listado-a-calificar.tpl.html",
-        context={"request": request, "fichas": fichas_pendientes}
+        context={"request": request, "fichas": fichas_pendientes, "user": user}
     )
 
 
@@ -390,12 +396,13 @@ async def eliminar_ficha(
 async def ver_calificar_ficha(
     request: Request,
     id: str,
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     ficha = crud.get_ficha(db, id)
     return templates.TemplateResponse(
         'calificar.tpl.html',
-        context={'request': request, "ficha": ficha}
+        context={'request': request, "ficha": ficha, "user": user}
     )
 
 
@@ -403,7 +410,7 @@ async def ver_calificar_ficha(
 async def calificar_ficha(
     id: str,
     ficha: Annotated[models.FichaCalificacionBase, Form()],
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
 ):
     f = crud.calificar_ficha(db, id, ficha)
     return HTMLResponse(
