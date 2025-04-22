@@ -1,76 +1,87 @@
 {% extends "base.tpl.html" %}
 {% block content %}
 {% set evaluado = ficha.evaluado %}
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="documento_identidad" class="form-label">N° Documento:</label>
-        {{evaluado.documento_identidad}}
+<div class="row flex-row-reverse">
+    <div class="col-12 col-md-8 mb-3">
+        <iframe class="w-100 h-100" style="min-height: 850px;" src="{{ficha.evaluado.ensayo}}"></iframe>
     </div>
-</div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="nombres" class="form-label">Nombres:</label>
-        {{evaluado.nombres}}
-    </div>
-</div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="apellido_paterno" class="form-label">Apellido paterno:</label>
-        {{evaluado.apellido_paterno}}
-    </div>
-</div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="apellido_materno" class="form-label">Apellido materno:</label>
-        {{evaluado.apellido_materno}}
-    </div>
-</div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="carrera" class="form-label">Carrera:</label>
-        {{evaluado.carrera}}
-    </div>
-</div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="edad" class="form-label">Edad:</label>
-        {{evaluado.edad}}
-    </div>
-</div>
-<div class="row mb-3">
-    <div class="col-md-6">
-        <label for="colegio" class="form-label">Colegio:</label>
-        {{evaluado.colegio}}
-    </div>
-</div>
-<form id="calificar-ficha" 
-    hx-patch="/ficha/{{ficha.id}}/calificar"
-    hx-target="this"
-    hx-swap="outerHTML"
-    hx-select="#calificar-ficha"
->
-    {% for i in range(1,5) %}
-    {% set c = 'criterio' + (i|string()) %}
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label class="form-label" id="label-{{c}}">{{c}}:</label>
-            {% for j in range(1,5) %}
-            <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="{{c}}" value="{{j}}" id="{{c}}-{{j}}" {% if ficha[c] == j %}checked{% endif %}>
-                <label class="form-check-label" for="{{c}}-{{j}}">{{j}}</label>
+    <div class="col-12 col-md-4">
+        <div class="row mb-3">
+            <div class="col">
+                <label for="documento_identidad" class="form-label">N° Documento:</label>
+                {{evaluado.documento_identidad}}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="nombres" class="form-label">Nombres:</label>
+                {{evaluado.nombres}}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="apellido_paterno" class="form-label">Apellido paterno:</label>
+                {{evaluado.apellido_paterno}}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="apellido_materno" class="form-label">Apellido materno:</label>
+                {{evaluado.apellido_materno}}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="carrera" class="form-label">Carrera:</label>
+                {{evaluado.carrera}}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="edad" class="form-label">Edad:</label>
+                {{evaluado.edad}}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="colegio" class="form-label">Colegio:</label>
+                {{evaluado.colegio}}
+            </div>
+        </div>
+        <hr>
+        <form id="calificar-ficha" 
+            hx-patch="/ficha/{{ficha.id}}/calificar"
+            hx-target="this"
+            hx-swap="outerHTML"
+            hx-select="#calificar-ficha"
+        >
+            {% for i in range(1,5) %}
+            {% set c = 'criterio' + (i|string()) %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="form-label" id="label-{{c}}">{{c}}:</label>
+                </div>
+                <div class="col">
+                    {% for j in range(1,5) %}
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" name="{{c}}" value="{{j}}" id="{{c}}-{{j}}" {% if ficha[c] == j %}checked{% endif %}>
+                        <label class="form-check-label" for="{{c}}-{{j}}">{{j}}</label>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
             {% endfor %}
-        </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="comentario" class="form-label">Comentario:</label>
+                    <textarea id="comentario" class="form-control" name="comentario" rows="3">{% if ficha.comentario %}{{ficha.comentario}}{% endif %}</textarea>
+                </div>
+            </div>
+            <div class="container d-flex justify-content-start">
+                <button id="guardar" class="my-4 btn btn-primary" form="calificar-ficha">Guardar</button>
+            </div>
+        </form>
     </div>
-    {% endfor %}
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="comentario" class="form-label">Comentario:</label>
-            <textarea id="comentario" class="form-control" name="comentario" rows="3">{% if ficha.comentario %}{{ficha.comentario}}{% endif %}</textarea>
-        </div>
-    </div>
-    <div class="container d-flex justify-content-center">
-        <button id="guardar" class="m-4 btn btn-primary" form="calificar-ficha">Guardar</button>
-    </div>
-</form>
+
+</div>
 {% endblock %}
