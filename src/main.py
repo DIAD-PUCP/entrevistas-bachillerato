@@ -126,6 +126,7 @@ def show_message(text: str, type: str) -> dict[str, str]:
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 templates = Jinja2Templates(directory="templates")
 
 
