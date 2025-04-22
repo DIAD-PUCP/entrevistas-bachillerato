@@ -187,7 +187,7 @@ async def logout():
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, user: models.Usuario = Security(get_current_active_user)):
-    return templates.TemplateResponse("base.tpl.html", {"request": request, "user": user})
+    return templates.TemplateResponse("index.tpl.html", {"request": request, "user": user})
 
 
 @app.get("/usuario/{id}", response_class=HTMLResponse)
