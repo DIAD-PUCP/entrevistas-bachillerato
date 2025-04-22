@@ -31,6 +31,10 @@ ALGORITHM = os.getenv('ALGORITHM', "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)
 
 
+class AuthException(HTTPException):
+    pass
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -128,10 +132,6 @@ app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 templates = Jinja2Templates(directory="templates")
-
-
-class AuthException(Exception):
-    pass
 
 
 @app.exception_handler(AuthException)
@@ -255,6 +255,19 @@ async def listado_por_calificar(
     usuario = crud.get_usuario(db, id)
     fichas_pendientes = [
         ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
+    return templates.TemplateResponse(
+        "listado-a-calificar.tpl.html",
+        context={"request": request, "fichas": fichas_pendientes, "user": user}
+    )
+
+
+@app.get("/por-calificar", response_class=HTMLResponse)
+async def listado_propios_por_calificar(
+    request: Request,
+    user: models.Usuario = Security(get_current_active_user)
+):
+    fichas_pendientes = [
+        ficha for ficha in user.fichas]  # if ficha.fecha_calificacion is None]
     return templates.TemplateResponse(
         "listado-a-calificar.tpl.html",
         context={"request": request, "fichas": fichas_pendientes, "user": user}
@@ -415,5 +428,7 @@ async def calificar_ficha(
 ):
     f = crud.calificar_ficha(db, id, ficha)
     return HTMLResponse(
-        headers={'HX-Redirect': f'/usuario/{f.calificador.id}/por-calificar'},
+        status_code=303,
+        headers=show_message("Se guardó la calificación","success")|
+        {'HX-Redirect': "/por-calificar"}
     )
