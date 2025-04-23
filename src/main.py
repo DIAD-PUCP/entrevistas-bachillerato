@@ -74,9 +74,9 @@ async def get_current_user(
     token: Annotated[Optional[str], Cookie()] = None,
     db: Session = Depends(get_session)
 ) -> models.Usuario:
-    credentials_exception = HTTPException(
+    credentials_exception = AuthException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials"
+        detail="No se pudieron validar las credenciales"
     )
     if not token:
         raise credentials_exception
@@ -135,16 +135,19 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.exception_handler(AuthException)
-async def auth_exception_handler(request: Request, exc: AuthException) -> RedirectResponse:
-    headers = show_message(
-        'Es necesario iniciar sesión \n' + str(exc),
+async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLResponse:
+    msg = show_message(
+        exc.detail,
         'danger'
     )
-    return RedirectResponse(
-        f'/login?target={request.url.path}',
-        status_code=301,
-        headers=headers
+    res = templates.TemplateResponse(
+        'login.tpl.html',
+        {"request": request, "target": request.url.path},
+        status_code=200,
+        headers={'HX-Push-Url':f'/login?target={request.url.path}'}
     )
+    res.headers.update(msg)
+    return res
 
 
 @app.get('/login', response_class=HTMLResponse)
