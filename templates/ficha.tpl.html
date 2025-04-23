@@ -38,6 +38,12 @@
             </select>
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="fecha_entrevista" class="form-label">Fecha de entrevista:</label>
+            <input id="fecha_entrevista" class="form-control" type="datetime-local" name="fecha_entrevista" value="{% if ficha %}{{ficha.fecha_entrevista}}{% endif %}" required>
+        </div>
+    </div>
     {% for i in range(1,5) %}
     {% set c = 'criterio' + (i|string()) %}
     <div class="row mb-3">
@@ -56,6 +62,12 @@
         <div class="col-md-6">
             <label for="comentario" class="form-label">Comentario:</label>
             <textarea id="comentario" class="form-control" name="comentario" rows="3">{% if ficha and ficha.comentario %}{{ficha.comentario}}{% endif %}</textarea>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="fecha_calificacion" class="form-label">Fecha de calificacion:</label>
+            <input id="fecha_calificacion" class="form-control" type="datetime-local" name="fecha_calificacion" value="{% if ficha and ficha.fecha_calificacion %}{{ficha.fecha_calificacion.isoformat(timespec='seconds')}}{% endif %}">
         </div>
     </div>
     <div class="container d-flex justify-content-center">

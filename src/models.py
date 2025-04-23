@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class LoginData(BaseModel):
@@ -36,7 +36,11 @@ class UsuarioUpdate(UsuarioBase):
 class Usuario(UsuarioBase, table=True):
     hashed_password: str
     fichas: list["FichaCalificacion"] = Relationship(
-        back_populates='calificador')
+        back_populates='calificador',
+        sa_relationship_kwargs={
+            'order_by': 'FichaCalificacion.fecha_entrevista'
+        }
+    )
 
 
 class Evaluado(SQLModel, table=True):
@@ -61,6 +65,13 @@ class FichaCalificacionBase(SQLModel):
     comentario: Optional[str] = None
     fecha_calificacion: Optional[datetime] = None
 
+    @field_validator('fecha_calificacion', mode='before')
+    @classmethod
+    def validar_fecha(cls, value: Any) -> Any:
+        if isinstance(value, str) and (value == ''):
+            return None
+        return value
+
 
 class FichaCalificacion(FichaCalificacionBase, table=True):
     id: Annotated[str, Field(primary_key=True)]
@@ -68,6 +79,7 @@ class FichaCalificacion(FichaCalificacionBase, table=True):
     evaluado_id: Annotated[str, Field(foreign_key="evaluado.id")]
     calificador: Usuario = Relationship(back_populates='fichas')
     evaluado: Evaluado = Relationship(back_populates='fichas')
+    fecha_entrevista: datetime
 
 
 class DescCriterios(SQLModel, table=True):

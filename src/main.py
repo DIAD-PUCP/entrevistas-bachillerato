@@ -379,6 +379,7 @@ async def actualizar_ficha(
     ficha: Annotated[models.FichaCalificacion, Form()],
     db: Session = Depends(get_session)
 ):
+    ficha = models.FichaCalificacion.model_validate(ficha)
     f = crud.update_ficha(db, id, ficha)
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
