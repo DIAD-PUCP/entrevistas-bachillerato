@@ -191,7 +191,12 @@ async def index(request: Request, user: models.Usuario = Security(get_current_ac
 
 
 @app.get("/usuario/{id}", response_class=HTMLResponse)
-async def get_usuario(request: Request, id: str, db: Session = Depends(get_session)):
+async def get_usuario(
+    request: Request,
+    id: str,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
     if id == 'nuevo':
         usuario = None
     else:
@@ -199,21 +204,22 @@ async def get_usuario(request: Request, id: str, db: Session = Depends(get_sessi
         if not usuario:
             raise HTTPException(
                 status_code=404, detail="No se encontró usuario")
-    return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario})
+    return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario, "user": user})
 
 
 @app.post("/usuario/nuevo", response_class=HTMLResponse)
 async def nuevo_usuario(
     request: Request,
     usuario: Annotated[models.UsuarioCreate, Form()],
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
-    user = crud.create_usuario(db, usuario)
+    u = crud.create_usuario(db, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
-        context={"request": request, "usuario": user},
-        headers=show_message(f'Se creo el usuario {user.id}', 'success') |
-        {'HX-Push-Url': f'/usuario/{user.id}'}
+        context={"request": request, "usuario": u, "user": user},
+        headers=show_message(f'Se creo el usuario {u.id}', 'success') |
+        {'HX-Push-Url': f'/usuario/{u.id}'}
     )
 
 
@@ -222,12 +228,13 @@ async def actualizar_usuario(
     request: Request,
     id: str,
     usuario: Annotated[models.UsuarioUpdate, Form()],
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
-    user = crud.update_usuario(db, id, usuario)
+    u = crud.update_usuario(db, id, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
-        context={"request": request, "usuario": user},
+        context={"request": request, "usuario": u, "user": user},
         headers=show_message('Se actualizó el usuario', 'success')
     )
 
@@ -235,7 +242,8 @@ async def actualizar_usuario(
 @app.delete("/usuario/{id}", response_class=HTMLResponse)
 async def eliminar_usuario(
     id: str,
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     crud.delete_usuario(db, id)
     response = HTMLResponse(
@@ -275,7 +283,12 @@ async def listado_propios_por_calificar(
 
 
 @app.get("/evaluado/{id}", response_class=HTMLResponse)
-async def get_evaluado(request: Request, id: str, db: Session = Depends(get_session)):
+async def get_evaluado(
+    request: Request,
+    id: str,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
     if id == 'nuevo':
         evaluado = None
     else:
@@ -284,7 +297,9 @@ async def get_evaluado(request: Request, id: str, db: Session = Depends(get_sess
             raise HTTPException(
                 status_code=404, detail="No se encontró evaluado")
     return templates.TemplateResponse(
-        "evaluado.tpl.html", {"request": request, "evaluado": evaluado}
+        "evaluado.tpl.html", {"request": request,
+                              "evaluado": evaluado,
+                              "user": user}
     )
 
 
@@ -292,12 +307,13 @@ async def get_evaluado(request: Request, id: str, db: Session = Depends(get_sess
 async def nuevo_evaluado(
     request: Request,
     evaluado: Annotated[models.Evaluado, Form()],
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     evalua = crud.create_evaluado(db, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
-        context={"request": request, "evaluado": evalua},
+        context={"request": request, "evaluado": evalua, "user": user},
         headers=show_message(f'Se creo el evaluado {evalua.id}', 'success') |
         {'HX-Push-Url': f'/evaluado/{evalua.id}'}
     )
@@ -308,12 +324,13 @@ async def actualizar_evaluado(
     request: Request,
     id: str,
     evaluado: Annotated[models.Evaluado, Form()],
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     evalua = crud.update_evaluado(db, id, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
-        context={"request": request, "evaluado": evalua},
+        context={"request": request, "evaluado": evalua, "user": user},
         headers=show_message('Se actualizó el evaluado', 'success')
     )
 
@@ -321,7 +338,8 @@ async def actualizar_evaluado(
 @app.delete("/evaluado/{id}", response_class=HTMLResponse)
 async def eliminar_evaluado(
     id: str,
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     crud.delete_evaluado(db, id)
     response = HTMLResponse(
@@ -332,7 +350,12 @@ async def eliminar_evaluado(
 
 
 @app.get("/ficha/{id}", response_class=HTMLResponse)
-async def get_ficha(request: Request, id: str, db: Session = Depends(get_session)):
+async def get_ficha(
+    request: Request,
+    id: str,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
     if id == 'nueva':
         ficha = None
     else:
@@ -346,6 +369,7 @@ async def get_ficha(request: Request, id: str, db: Session = Depends(get_session
         "ficha": ficha,
         "usuarios": usuarios,
         "evaluados": evaluados,
+        "user": user,
     })
 
 
@@ -353,7 +377,8 @@ async def get_ficha(request: Request, id: str, db: Session = Depends(get_session
 async def nueva_ficha(
     request: Request,
     ficha: Annotated[models.FichaCalificacion, Form()],
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     f = crud.create_ficha(db, ficha)
     usuarios = crud.get_usuarios_activos(db)
@@ -365,6 +390,7 @@ async def nueva_ficha(
             "ficha": f,
             "usuarios": usuarios,
             "evaluados": evaluados,
+            "user": user
         },
         headers={'HX-Push-Url': f'/ficha/{f.id}'}
     )
@@ -377,7 +403,8 @@ async def actualizar_ficha(
     request: Request,
     id: str,
     ficha: Annotated[models.FichaCalificacion, Form()],
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     ficha = models.FichaCalificacion.model_validate(ficha)
     f = crud.update_ficha(db, id, ficha)
@@ -390,6 +417,7 @@ async def actualizar_ficha(
             "ficha": f,
             "usuarios": usuarios,
             "evaluados": evaluados,
+            "user": user
         }
     )
     resp.headers.update(show_message('Se actualizó la ficha', 'success'))
@@ -399,7 +427,8 @@ async def actualizar_ficha(
 @app.delete("/ficha/{id}", response_class=HTMLResponse)
 async def eliminar_ficha(
     id: str,
-    db: Session = Depends(get_session)
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     crud.delete_ficha(db, id)
     response = HTMLResponse(
