@@ -358,7 +358,7 @@ async def nueva_ficha(
     f = crud.create_ficha(db, ficha)
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
-    return templates.TemplateResponse(
+    resp = templates.TemplateResponse(
         "ficha.tpl.html",
         context={
             "request": request,
@@ -366,9 +366,10 @@ async def nueva_ficha(
             "usuarios": usuarios,
             "evaluados": evaluados,
         },
-        headers=show_message(f'Se creo la ficha {f.id}', 'success') |
-        {'HX-Push-Url': f'/ficha/{f.id}'}
+        headers={'HX-Push-Url': f'/ficha/{f.id}'}
     )
+    resp.headers.update(show_message(f'Se creo la ficha {f.id}', 'success'))
+    return resp
 
 
 @app.patch("/ficha/{id}", response_class=HTMLResponse)
@@ -381,16 +382,17 @@ async def actualizar_ficha(
     f = crud.update_ficha(db, id, ficha)
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
-    return templates.TemplateResponse(
+    resp = templates.TemplateResponse(
         "ficha.tpl.html",
         context={
             "request": request,
             "ficha": f,
             "usuarios": usuarios,
             "evaluados": evaluados,
-        },
-        headers=show_message('Se actualizó la ficha', 'success')
+        }
     )
+    resp.headers.update(show_message('Se actualizó la ficha', 'success'))
+    return resp
 
 
 @app.delete("/ficha/{id}", response_class=HTMLResponse)
@@ -422,13 +424,14 @@ async def ver_calificar_ficha(
 
 @app.patch("/ficha/{id}/calificar", response_class=HTMLResponse)
 async def calificar_ficha(
+    request: Request,
     id: str,
     ficha: Annotated[models.FichaCalificacionBase, Form()],
     db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
 ):
     f = crud.calificar_ficha(db, id, ficha)
-    return HTMLResponse(
-        status_code=303,
-        headers=show_message("Se guardó la calificación","success")|
-        {'HX-Redirect': "/por-calificar"}
-    )
+    resp = await listado_propios_por_calificar(request, user)
+    resp.headers.update(show_message("Se guardó la calificación", "success"))
+    resp.headers.update({'HX-Push-Url': '/por-calificar'})
+    return resp

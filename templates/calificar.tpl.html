@@ -3,7 +3,7 @@
 {% set evaluado = ficha.evaluado %}
 <div class="row flex-row-reverse">
     <div class="col-12 col-md-8 mb-3">
-        <iframe class="w-100 h-100" style="min-height: 850px;" src="/assets/pdfjs/web/viewer.html?file={{ficha.evaluado.ensayo}}"></iframe>
+        <iframe class="w-100 h-100" style="min-height: 800px;" src="/assets/pdfjs/web/viewer.html?file={{ficha.evaluado.ensayo}}"></iframe>
     </div>
     <div class="col-12 col-md-4">
         <div class="row mb-3">
@@ -51,9 +51,7 @@
         <hr>
         <form id="calificar-ficha" 
             hx-patch="/ficha/{{ficha.id}}/calificar"
-            hx-target="this"
-            hx-swap="outerHTML"
-            hx-select="#calificar-ficha"
+            hx-target="body"
         >
             {% for i in range(1,5) %}
             {% set c = 'criterio' + (i|string()) %}
@@ -78,7 +76,7 @@
                 </div>
             </div>
             <div class="container d-flex justify-content-start">
-                <button id="guardar" class="my-4 btn btn-primary" form="calificar-ficha">Guardar</button>
+                <button id="guardar" class="my-1 btn btn-primary" form="calificar-ficha">Guardar</button>
             </div>
         </form>
     </div>
