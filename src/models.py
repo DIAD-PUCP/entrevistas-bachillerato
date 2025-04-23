@@ -68,3 +68,11 @@ class FichaCalificacion(FichaCalificacionBase, table=True):
     evaluado_id: Annotated[str, Field(foreign_key="evaluado.id")]
     calificador: Usuario = Relationship(back_populates='fichas')
     evaluado: Evaluado = Relationship(back_populates='fichas')
+
+
+class DescCriterios(SQLModel, table=True):
+    id: Annotated[int, Field(primary_key=True)]
+    criterio1: str
+    criterio2: str
+    criterio3: str
+    criterio4: str

@@ -28,7 +28,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = os.getenv('SECRET_KEY', "")
 ALGORITHM = os.getenv('ALGORITHM', "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 240)
 
 
 class AuthException(HTTPException):
@@ -416,9 +416,11 @@ async def ver_calificar_ficha(
     user: models.Usuario = Security(get_current_active_user)
 ):
     ficha = crud.get_ficha(db, id)
+    desc_crit = crud.get_decripciones_criterios(db)
     return templates.TemplateResponse(
         'calificar.tpl.html',
-        context={'request': request, "ficha": ficha, "user": user}
+        context={'request': request, "ficha": ficha,
+                 "user": user, "crit": desc_crit}
     )
 
 
