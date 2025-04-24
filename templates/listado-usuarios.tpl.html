@@ -1,0 +1,30 @@
+{% extends "base.tpl.html" %}
+{% block content %}
+<div>
+<a class="btn btn-primary" href="/usuario/nuevo">Nuevo usuario</a>
+</div>
+<div class="table-responsive">
+    <table class="table" hx-boost="true">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Perfil</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr class="align-middle">
+                <td>{{usuario.id}}</td>
+                <td>{{usuario.apellido_paterno}} {{usuario.apellido_materno}}, {{usuario.nombres}}</td>
+                <td>{{usuario.perfil}}</td>
+                <td>{% if usuario.activo %}<i class="bi bi-check"></i>{% else %}-{% endif %}</td>
+                <td><a class="btn btn-sm btn-primary" href="/usuario/{{usuario.id}}">Editar</a> <a class="btn btn-sm btn-danger" hx-delete="/usuario/{{usuario.id}}">Eliminar</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

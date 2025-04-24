@@ -9,6 +9,11 @@ from . import models
 def get_usuario(db: Session, id: str) -> Optional[models.Usuario]:
     return db.get(models.Usuario, id)
 
+def get_all_usuarios(db: Session) -> list[models.Usuario]:
+    return list(db.exec(
+        select(models.Usuario)
+    ).all())
+
 
 def get_usuarios_activos(db: Session) -> list[models.Usuario]:
     return list(db.exec(
@@ -101,6 +106,10 @@ def delete_evaluado(db: Session, id: str) -> None:
 def get_ficha(db: Session, id: str) -> Optional[models.FichaCalificacion]:
     return db.get(models.FichaCalificacion, id)
 
+def get_all_fichas(db: Session) -> list[models.FichaCalificacion]:
+    return list(db.exec(
+        select(models.FichaCalificacion)
+    ).all())
 
 def create_ficha(db: Session, ficha: models.FichaCalificacion) -> models.FichaCalificacion:
     ficha_data = ficha.model_dump()

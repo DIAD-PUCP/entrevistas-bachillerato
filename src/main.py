@@ -34,6 +34,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 240)
 class AuthException(HTTPException):
     pass
 
+
 class ForbiddenException(HTTPException):
     pass
 
@@ -147,10 +148,11 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
         'login.tpl.html',
         {"request": request, "target": request.url.path},
         status_code=200,
-        headers={'HX-Push-Url':f'/login?target={request.url.path}'}
+        headers={'HX-Push-Url': f'/login?target={request.url.path}'}
     )
     res.headers.update(msg)
     return res
+
 
 @app.exception_handler(ForbiddenException)
 async def forbidden_exception_handler(request: Request, exc: ForbiddenException) -> HTMLResponse:
@@ -203,6 +205,21 @@ async def logout():
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, user: models.Usuario = Security(get_current_active_user)):
     return templates.TemplateResponse("index.tpl.html", {"request": request, "user": user})
+
+
+@app.get("/usuarios", response_class=HTMLResponse)
+async def get_usuarios(
+    request: Request,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+    usuarios = crud.get_all_usuarios(db)
+    return templates.TemplateResponse(
+        "listado-usuarios.tpl.html",
+        {"request": request, "usuarios": usuarios, "user": user}
+    )
 
 
 @app.get("/usuario/{id}", response_class=HTMLResponse)
@@ -308,6 +325,21 @@ async def listado_propios_por_calificar(
     )
 
 
+@app.get("/evaluados", response_class=HTMLResponse)
+async def get_evaluados(
+    request: Request,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+    evaluados = crud.get_evaluados(db)
+    return templates.TemplateResponse(
+        "listado-evaluados.tpl.html",
+        {"request": request, "evaluados": evaluados, "user": user}
+    )
+
+
 @app.get("/evaluado/{id}", response_class=HTMLResponse)
 async def get_evaluado(
     request: Request,
@@ -381,6 +413,21 @@ async def eliminar_evaluado(
         status_code=200
     )
     return response
+
+
+@app.get("/fichas", response_class=HTMLResponse)
+async def get_fichas(
+    request: Request,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+    fichas = crud.get_all_fichas(db)
+    return templates.TemplateResponse(
+        "listado-fichas.tpl.html",
+        {"request": request, "fichas": fichas, "user": user}
+    )
 
 
 @app.get("/ficha/{id}", response_class=HTMLResponse)

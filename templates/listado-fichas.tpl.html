@@ -1,0 +1,36 @@
+{% extends "base.tpl.html" %}
+{% block content %}
+<div>
+<a class="btn btn-primary" href="/ficha/nueva">Nueva ficha</a>
+</div>
+<div class="table-responsive">
+    <table class="table" hx-boost="true">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Evaluado</th>
+                <th>Calificador</th>
+                <th>Turno</th>
+                <th>Calificada</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ficha in fichas %}
+            {% set evaluado = ficha.evaluado %}
+            {% set calificador = ficha.calificador %}
+            <tr class="align-middle">
+                <td>{{ficha.id}}</td>
+                <td>{{evaluado.apellido_paterno}} {{evaluado.apellido_materno}}, {{evaluado.nombres}}</td>
+                <td>{{calificador.apellido_paterno}} {{calificador.apellido_materno}}, {{calificador.nombres}}</td>
+                <td>{{ficha.fecha_entrevista.isoformat(timespec='minutes', sep=' ')}}</td>
+                <td>{% if ficha.fecha_calificacion %}<i class="bi bi-check"></i>{% else %}-{% endif %}</td>
+                <td><a class="btn btn-sm btn-primary" href="/ficha/{{ficha.id}}">Editar</a> <a class="btn btn-sm btn-danger" hx-delete="/ficha/{{ficha.id}}">Eliminar</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center"> No se encontraron fichas</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
