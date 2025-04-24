@@ -34,6 +34,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 240)
 class AuthException(HTTPException):
     pass
 
+class ForbiddenException(HTTPException):
+    pass
+
 
 class Token(BaseModel):
     access_token: str
@@ -149,6 +152,15 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
     res.headers.update(msg)
     return res
 
+@app.exception_handler(ForbiddenException)
+async def forbidden_exception_handler(request: Request, exc: ForbiddenException) -> HTMLResponse:
+    res = templates.TemplateResponse(
+        'forbidden.tpl.html',
+        {"request": request},
+        status_code=status.HTTP_403_FORBIDDEN
+    )
+    return res
+
 
 @app.get('/login', response_class=HTMLResponse)
 async def login(request: Request, target: Optional[str] = None):
@@ -200,6 +212,9 @@ async def get_usuario(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    print(user.perfil)
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     if id == 'nuevo':
         usuario = None
     else:
@@ -217,6 +232,8 @@ async def nuevo_usuario(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     u = crud.create_usuario(db, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
@@ -234,6 +251,8 @@ async def actualizar_usuario(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     u = crud.update_usuario(db, id, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
@@ -248,6 +267,8 @@ async def eliminar_usuario(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     crud.delete_usuario(db, id)
     response = HTMLResponse(
         headers={'HX-Redirect': '/usuarios'},
@@ -263,6 +284,8 @@ async def listado_por_calificar(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador' and user.id != id:
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     usuario = crud.get_usuario(db, id)
     fichas_pendientes = [
         ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
@@ -278,7 +301,7 @@ async def listado_propios_por_calificar(
     user: models.Usuario = Security(get_current_active_user)
 ):
     fichas_pendientes = [
-        ficha for ficha in user.fichas]  # if ficha.fecha_calificacion is None]
+        ficha for ficha in user.fichas if ficha.fecha_calificacion is None]
     return templates.TemplateResponse(
         "listado-a-calificar.tpl.html",
         context={"request": request, "fichas": fichas_pendientes, "user": user}
@@ -292,6 +315,8 @@ async def get_evaluado(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     if id == 'nuevo':
         evaluado = None
     else:
@@ -313,6 +338,8 @@ async def nuevo_evaluado(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     evalua = crud.create_evaluado(db, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
@@ -330,6 +357,8 @@ async def actualizar_evaluado(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     evalua = crud.update_evaluado(db, id, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
@@ -344,6 +373,8 @@ async def eliminar_evaluado(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     crud.delete_evaluado(db, id)
     response = HTMLResponse(
         headers={'HX-Redirect': '/evaluados'},
@@ -359,6 +390,8 @@ async def get_ficha(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     if id == 'nueva':
         ficha = None
     else:
@@ -383,6 +416,8 @@ async def nueva_ficha(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     f = crud.create_ficha(db, ficha)
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
@@ -409,6 +444,8 @@ async def actualizar_ficha(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     ficha = models.FichaCalificacion.model_validate(ficha)
     f = crud.update_ficha(db, id, ficha)
     usuarios = crud.get_usuarios_activos(db)
@@ -433,6 +470,8 @@ async def eliminar_ficha(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
+    if user.perfil != 'Administrador':
+        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     crud.delete_ficha(db, id)
     response = HTMLResponse(
         headers={'HX-Redirect': '/fichas'},
