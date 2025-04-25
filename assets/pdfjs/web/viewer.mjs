@@ -782,7 +782,7 @@ const defaultOptions = {
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   imageResourcesPath: {
-    value: "./images/",
+    value: "https://unpkg.com/pdfjs-dist@5.1.91/web/images/",
     kind: OptionKind.VIEWER
   },
   maxCanvasPixels: {
@@ -838,7 +838,7 @@ const defaultOptions = {
     kind: OptionKind.API
   },
   cMapUrl: {
-    value: "../web/cmaps/",
+    value: "https://unpkg.com/pdfjs-dist@5.1.91/cmaps/",
     kind: OptionKind.API
   },
   disableAutoFetch: {
@@ -874,7 +874,7 @@ const defaultOptions = {
     kind: OptionKind.API
   },
   iccUrl: {
-    value: "../web/iccs/",
+    value: "https://unpkg.com/pdfjs-dist@5.1.91/iccs/",
     kind: OptionKind.API
   },
   isEvalSupported: {
@@ -894,7 +894,7 @@ const defaultOptions = {
     kind: OptionKind.API
   },
   standardFontDataUrl: {
-    value: "../web/standard_fonts/",
+    value: "https://unpkg.com/pdfjs-dist@5.1.91/standard_fonts/",
     kind: OptionKind.API
   },
   useSystemFonts: {
@@ -907,7 +907,7 @@ const defaultOptions = {
     kind: OptionKind.API
   },
   wasmUrl: {
-    value: "../web/wasm/",
+    value: "https://unpkg.com/pdfjs-dist@5.1.91/wasm/",
     kind: OptionKind.API
   },
   workerPort: {
@@ -915,17 +915,17 @@ const defaultOptions = {
     kind: OptionKind.WORKER
   },
   workerSrc: {
-    value: "../build/pdf.worker.mjs",
+    value: "https://unpkg.com/pdfjs-dist@5.1.91/build/pdf.worker.min.mjs",
     kind: OptionKind.WORKER
   }
 };
 {
   defaultOptions.defaultUrl = {
-    value: "compressed.tracemonkey-pldi-09.pdf",
+    value: "",
     kind: OptionKind.VIEWER
   };
   defaultOptions.sandboxBundleSrc = {
-    value: "../build/pdf.sandbox.mjs",
+    value: "https://unpkg.com/pdfjs-dist@5.1.91/build/pdf.sandbox.mjs",
     kind: OptionKind.VIEWER
   };
   defaultOptions.enableFakeMLManager = {
