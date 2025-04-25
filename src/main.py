@@ -122,11 +122,11 @@ def authenticate_user(db: Session, email: str, password: str):
     return user
 
 
-def show_message(text: str, type: str) -> dict[str, str]:
+def show_message(text: str, msg_type: str) -> dict[str, str]:
     return {'HX-Trigger-After-Swap': json.dumps({
         'showMessage': {
             'text': text,
-            'type': type
+            'type': msg_type
         }
     })}
 
@@ -231,10 +231,10 @@ async def get_usuarios(
     )
 
 
-@app.get("/usuario/{id}", response_class=HTMLResponse)
+@app.get("/usuario/{user_id}", response_class=HTMLResponse)
 async def get_usuario(
     request: Request,
-    id: str,
+    user_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -243,10 +243,10 @@ async def get_usuario(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    if id == 'nuevo':
+    if user_id == 'nuevo':
         usuario = None
     else:
-        usuario = db.get(models.Usuario, id)
+        usuario = db.get(models.Usuario, user_id)
         if not usuario:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró usuario")
@@ -274,10 +274,10 @@ async def nuevo_usuario(
     )
 
 
-@app.patch("/usuario/{id}", response_class=HTMLResponse)
+@app.patch("/usuario/{user_id}", response_class=HTMLResponse)
 async def actualizar_usuario(
     request: Request,
-    id: str,
+    user_id: str,
     usuario: Annotated[models.UsuarioUpdate, Form()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
@@ -287,7 +287,7 @@ async def actualizar_usuario(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    u = crud.update_usuario(db, id, usuario)
+    u = crud.update_usuario(db, user_id, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
         context={"request": request, "usuario": u, "user": user},
@@ -295,9 +295,9 @@ async def actualizar_usuario(
     )
 
 
-@app.delete("/usuario/{id}", response_class=HTMLResponse)
+@app.delete("/usuario/{user_id}", response_class=HTMLResponse)
 async def eliminar_usuario(
-    id: str,
+    user_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -306,26 +306,26 @@ async def eliminar_usuario(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    crud.delete_usuario(db, id)
+    crud.delete_usuario(db, user_id)
     response = HTMLResponse(
         status_code=200
     )
     return response
 
 
-@app.get("/usuario/{id}/por-calificar", response_class=HTMLResponse)
+@app.get("/usuario/{user_id}/por-calificar", response_class=HTMLResponse)
 async def listado_por_calificar(
     request: Request,
-    id: str,
+    user_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
-    if user.perfil != 'Administrador' and user.id != id:
+    if user.perfil != 'Administrador' and user.id != user_id:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    usuario = crud.get_usuario(db, id)
+    usuario = crud.get_usuario(db, user_id)
     if not usuario:
         raise HTTPException(status_code=404, detail="No se encontró usuario")
     fichas_pendientes = [
@@ -367,10 +367,10 @@ async def get_evaluados(
     )
 
 
-@app.get("/evaluado/{id}", response_class=HTMLResponse)
+@app.get("/evaluado/{evaluado_id}", response_class=HTMLResponse)
 async def get_evaluado(
     request: Request,
-    id: str,
+    evaluado_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -379,10 +379,10 @@ async def get_evaluado(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    if id == 'nuevo':
+    if evaluado_id == 'nuevo':
         evaluado = None
     else:
-        evaluado = db.get(models.Evaluado, id)
+        evaluado = db.get(models.Evaluado, evaluado_id)
         if not evaluado:
             raise HTTPException(
                 status_code=404, detail="No se encontró evaluado")
@@ -414,10 +414,10 @@ async def nuevo_evaluado(
     )
 
 
-@app.patch("/evaluado/{id}", response_class=HTMLResponse)
+@app.patch("/evaluado/{evaluado_id}", response_class=HTMLResponse)
 async def actualizar_evaluado(
     request: Request,
-    id: str,
+    evaluado_id: str,
     evaluado: Annotated[models.Evaluado, Form()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
@@ -427,7 +427,7 @@ async def actualizar_evaluado(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    evalua = crud.update_evaluado(db, id, evaluado)
+    evalua = crud.update_evaluado(db, evaluado_id, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
         context={"request": request, "evaluado": evalua, "user": user},
@@ -435,9 +435,9 @@ async def actualizar_evaluado(
     )
 
 
-@app.delete("/evaluado/{id}", response_class=HTMLResponse)
+@app.delete("/evaluado/{evaluado_id}", response_class=HTMLResponse)
 async def eliminar_evaluado(
-    id: str,
+    evaluado_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -446,7 +446,7 @@ async def eliminar_evaluado(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    crud.delete_evaluado(db, id)
+    crud.delete_evaluado(db, evaluado_id)
     response = HTMLResponse(
         status_code=200
     )
@@ -471,10 +471,10 @@ async def get_fichas(
     )
 
 
-@app.get("/ficha/{id}", response_class=HTMLResponse)
+@app.get("/ficha/{ficha_id}", response_class=HTMLResponse)
 async def get_ficha(
     request: Request,
-    id: str,
+    ficha_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -483,10 +483,10 @@ async def get_ficha(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    if id == 'nueva':
+    if ficha_id == 'nueva':
         ficha = None
     else:
-        ficha = db.get(models.FichaCalificacion, id)
+        ficha = db.get(models.FichaCalificacion, ficha_id)
         if not ficha:
             raise HTTPException(status_code=404, detail="No se encontró ficha")
     usuarios = crud.get_usuarios_activos(db)
@@ -530,10 +530,10 @@ async def nueva_ficha(
     return resp
 
 
-@app.patch("/ficha/{id}", response_class=HTMLResponse)
+@app.patch("/ficha/{ficha_id}", response_class=HTMLResponse)
 async def actualizar_ficha(
     request: Request,
-    id: str,
+    ficha_id: str,
     ficha: Annotated[models.FichaCalificacion, Form()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
@@ -544,7 +544,7 @@ async def actualizar_ficha(
             detail="No cuenta con los suficientes permisos para esta acción"
         )
     ficha = models.FichaCalificacion.model_validate(ficha)
-    f = crud.update_ficha(db, id, ficha)
+    f = crud.update_ficha(db, ficha_id, ficha)
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
     resp = templates.TemplateResponse(
@@ -561,9 +561,9 @@ async def actualizar_ficha(
     return resp
 
 
-@app.delete("/ficha/{id}", response_class=HTMLResponse)
+@app.delete("/ficha/{ficha_id}", response_class=HTMLResponse)
 async def eliminar_ficha(
-    id: str,
+    ficha_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -572,21 +572,21 @@ async def eliminar_ficha(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    crud.delete_ficha(db, id)
+    crud.delete_ficha(db, ficha_id)
     response = HTMLResponse(
         status_code=200
     )
     return response
 
 
-@app.get("/ficha/{id}/calificar", response_class=HTMLResponse)
+@app.get("/ficha/{ficha_id}/calificar", response_class=HTMLResponse)
 async def ver_calificar_ficha(
     request: Request,
-    id: str,
+    ficha_id: str,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
-    ficha = crud.get_ficha(db, id)
+    ficha = crud.get_ficha(db, ficha_id)
     desc_crit = crud.get_decripciones_criterios(db)
     return templates.TemplateResponse(
         'calificar.tpl.html',
@@ -595,15 +595,15 @@ async def ver_calificar_ficha(
     )
 
 
-@app.patch("/ficha/{id}/calificar", response_class=HTMLResponse)
+@app.patch("/ficha/{ficha_id}/calificar", response_class=HTMLResponse)
 async def calificar_ficha(
     request: Request,
-    id: str,
+    ficha_id: str,
     ficha: Annotated[models.FichaCalificacionBase, Form()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
-    _ = crud.calificar_ficha(db, id, ficha)
+    _ = crud.calificar_ficha(db, ficha_id, ficha)
     resp = await listado_propios_por_calificar(request, user)
     resp.headers.update(show_message("Se guardó la calificación", "success"))
     resp.headers.update({'HX-Push-Url': '/por-calificar'})
