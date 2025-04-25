@@ -155,3 +155,13 @@ def calificar_ficha(db: Session, ficha_id: str, ficha: models.FichaCalificacionB
 
 def get_decripciones_criterios(db: Session) -> Optional[models.DescCriterios]:
     return db.get(models.DescCriterios, 1)
+
+def set_decripciones_criterios(db: Session, criterios: models.DescCriterios) -> models.DescCriterios:
+    crit = db.get(models.DescCriterios, 1)
+    if not crit:
+        crit = criterios
+    else:
+        crit.sqlmodel_update(criterios)
+    db.add(crit)
+    db.commit()
+    return crit

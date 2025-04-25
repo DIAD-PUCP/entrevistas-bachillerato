@@ -608,3 +608,48 @@ async def calificar_ficha(
     resp.headers.update(show_message("Se guardó la calificación", "success"))
     resp.headers.update({'HX-Push-Url': '/por-calificar'})
     return resp
+
+
+@app.get("/criterios/", response_class=HTMLResponse)
+async def ver_criterios(
+    request: Request,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    criterios = crud.get_decripciones_criterios(db)
+    return templates.TemplateResponse(
+        "criterios.tpl.html",{
+            "request":request,
+            "criterios":criterios,
+            "user":user
+        }
+    )
+
+
+@app.patch("/criterios/",response_class=HTMLResponse)
+async def actualizar_criterios(
+    request: Request,
+    criterios: models.DescCriterios,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    criterios = crud.set_decripciones_criterios(db,criterios)
+    resp =  templates.TemplateResponse(
+        "criterios.tpl.html",{
+            "request":request,
+            "criterios":criterios,
+            "user":user
+        }
+    )
+    resp.headers.update(show_message("Se actualizaron los criterios", "success"))
+    return resp
