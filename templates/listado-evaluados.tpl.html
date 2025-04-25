@@ -25,6 +25,8 @@
                 <td>{{evaluado.colegio}}</td>
                 <td><a class="btn btn-sm btn-primary" href="/evaluado/{{evaluado.id}}">Editar</a> <a class="btn btn-sm btn-danger" hx-delete="/evaluado/{{evaluado.id}}">Eliminar</a></td>
             </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center"> No se encontraron evaluados</td></tr>
             {% endfor %}
         </tbody>
     </table>
