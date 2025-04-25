@@ -4,7 +4,7 @@ import json
 import os
 from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request, Security
 from fastapi.concurrency import asynccontextmanager
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
@@ -123,7 +123,7 @@ def authenticate_user(db: Session, email: str, password: str):
 
 
 def show_message(text: str, type: str) -> dict[str, str]:
-    return {'HX-Trigger': json.dumps({
+    return {'HX-Trigger-After-Swap': json.dumps({
         'showMessage': {
             'text': text,
             'type': type
@@ -183,7 +183,9 @@ async def login_for_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers=show_message('Usuario o contraseña incorrectos', 'danger')
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES) # type: ignore
+    access_token_expires = timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES  # type: ignore
+    )
     access_token = create_access_token(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
@@ -194,11 +196,15 @@ async def login_for_access_token(
     return response
 
 
-@app.get("/logout", response_class=RedirectResponse)
-async def logout():
-    response = RedirectResponse('/login', status_code=status.HTTP_302_FOUND)
+@app.get("/logout", response_class=HTMLResponse)
+async def logout(request: Request):
+    response = templates.TemplateResponse(
+        'login.tpl.html',
+        {"request": request},
+        status_code=status.HTTP_302_FOUND,
+        headers=show_message('Se cerró sesión', 'success')
+    )
     response.set_cookie(key='token', value='', expires=-1)
-    response.headers.update(show_message('Se cerró sesión', 'success'))
     return response
 
 
