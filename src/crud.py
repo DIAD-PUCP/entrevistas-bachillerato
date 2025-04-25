@@ -6,8 +6,8 @@ from sqlmodel import Session, select
 from . import models
 
 
-def get_usuario(db: Session, id: str) -> Optional[models.Usuario]:
-    return db.get(models.Usuario, id)
+def get_usuario(db: Session, usuario_id: str) -> Optional[models.Usuario]:
+    return db.get(models.Usuario, usuario_id)
 
 
 def get_all_usuarios(db: Session) -> list[models.Usuario]:
@@ -39,8 +39,8 @@ def create_usuario(db: Session, usuario: models.UsuarioCreate) -> models.Usuario
     return user
 
 
-def update_usuario(db: Session, id: str, usuario: models.UsuarioUpdate) -> models.Usuario:
-    user = db.get(models.Usuario, id)
+def update_usuario(db: Session, usuario_id: str, usuario: models.UsuarioUpdate) -> models.Usuario:
+    user = db.get(models.Usuario, usuario_id)
     if not user:
         raise HTTPException(status_code=404, detail="No se encontró usuario")
     user_data = usuario.model_dump(exclude_unset=True)
@@ -52,16 +52,16 @@ def update_usuario(db: Session, id: str, usuario: models.UsuarioUpdate) -> model
     return user
 
 
-def delete_usuario(db: Session, id: str) -> None:
-    user = db.get(models.Usuario, id)
+def delete_usuario(db: Session, usuario_id: str) -> None:
+    user = db.get(models.Usuario, usuario_id)
     if not user:
         raise HTTPException(status_code=404, detail="No se encontró usuario")
     db.delete(user)
     db.commit()
 
 
-def get_evaluado(db: Session, id: str) -> Optional[models.Evaluado]:
-    return db.get(models.Evaluado, id)
+def get_evaluado(db: Session, evaluado_id: str) -> Optional[models.Evaluado]:
+    return db.get(models.Evaluado, evaluado_id)
 
 
 def get_evaluados(db: Session) -> list[models.Evaluado]:
@@ -85,8 +85,8 @@ def create_evaluado(db: Session, evaluado: models.Evaluado) -> models.Evaluado:
     return evalua
 
 
-def update_evaluado(db: Session, id: str, evaluado: models.Evaluado) -> models.Evaluado:
-    evalua = db.get(models.Evaluado, id)
+def update_evaluado(db: Session, evaluado_id: str, evaluado: models.Evaluado) -> models.Evaluado:
+    evalua = db.get(models.Evaluado, evaluado_id)
     if not evalua:
         raise HTTPException(status_code=404, detail="No se encontró evaluado")
     evaluado_data = evaluado.model_dump(exclude_unset=True)
@@ -96,16 +96,16 @@ def update_evaluado(db: Session, id: str, evaluado: models.Evaluado) -> models.E
     return evalua
 
 
-def delete_evaluado(db: Session, id: str) -> None:
-    evalua = db.get(models.Evaluado, id)
+def delete_evaluado(db: Session, evaluado_id: str) -> None:
+    evalua = db.get(models.Evaluado, evaluado_id)
     if not evalua:
         raise HTTPException(status_code=404, detail="No se encontró evaluado")
     db.delete(evalua)
     db.commit()
 
 
-def get_ficha(db: Session, id: str) -> Optional[models.FichaCalificacion]:
-    return db.get(models.FichaCalificacion, id)
+def get_ficha(db: Session, ficha_id: str) -> Optional[models.FichaCalificacion]:
+    return db.get(models.FichaCalificacion, ficha_id)
 
 
 def get_all_fichas(db: Session) -> list[models.FichaCalificacion]:
@@ -122,8 +122,8 @@ def create_ficha(db: Session, ficha: models.FichaCalificacion) -> models.FichaCa
     return f
 
 
-def update_ficha(db: Session, id: str, ficha: models.FichaCalificacion) -> models.FichaCalificacion:
-    f = db.get(models.FichaCalificacion, id)
+def update_ficha(db: Session, ficha_id: str, ficha: models.FichaCalificacion) -> models.FichaCalificacion:
+    f = db.get(models.FichaCalificacion, ficha_id)
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
     ficha_data = ficha.model_dump(exclude_unset=True)
@@ -133,16 +133,16 @@ def update_ficha(db: Session, id: str, ficha: models.FichaCalificacion) -> model
     return f
 
 
-def delete_ficha(db: Session, id: str) -> None:
-    ficha = db.get(models.FichaCalificacion, id)
+def delete_ficha(db: Session, ficha_id: str) -> None:
+    ficha = db.get(models.FichaCalificacion, ficha_id)
     if not ficha:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
     db.delete(ficha)
     db.commit()
 
 
-def calificar_ficha(db: Session, id: str, ficha: models.FichaCalificacionBase) -> models.FichaCalificacion:
-    f = db.get(models.FichaCalificacion, id)
+def calificar_ficha(db: Session, ficha_id: str, ficha: models.FichaCalificacionBase) -> models.FichaCalificacion:
+    f = db.get(models.FichaCalificacion, ficha_id)
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
     ficha_data = ficha.model_dump(exclude_unset=True)
