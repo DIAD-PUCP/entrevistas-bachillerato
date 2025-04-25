@@ -35,14 +35,6 @@ class AuthException(HTTPException):
     pass
 
 
-class ForbiddenException(HTTPException):
-    status_code: int = status.HTTP_403_FORBIDDEN
-
-
-class NotFoundException(HTTPException):
-    pass
-
-
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -158,11 +150,11 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
     return res
 
 
-@app.exception_handler(ForbiddenException)
-async def forbidden_exception_handler(request: Request, exc: ForbiddenException) -> HTMLResponse:
+@app.exception_handler(HTTPException)
+async def forbidden_exception_handler(request: Request, exc:HTTPException) -> HTMLResponse:
     res = templates.TemplateResponse(
         'error.tpl.html',
-        {"request": request, 'msg':"No cuenta con los suficientes permisos para esta acción"},
+        {"request": request, 'msg':exc.detail},
         status_code=exc.status_code
     )
     return res
@@ -218,7 +210,10 @@ async def get_usuarios(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     usuarios = crud.get_all_usuarios(db)
     return templates.TemplateResponse(
         "listado-usuarios.tpl.html",
@@ -234,14 +229,17 @@ async def get_usuario(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     if id == 'nuevo':
         usuario = None
     else:
         usuario = db.get(models.Usuario, id)
         if not usuario:
             raise HTTPException(
-                status_code=404, detail="No se encontró usuario")
+                status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró usuario")
     return templates.TemplateResponse("usuario.tpl.html", {"request": request, "usuario": usuario, "user": user})
 
 
@@ -253,7 +251,10 @@ async def nuevo_usuario(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     u = crud.create_usuario(db, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
@@ -272,7 +273,10 @@ async def actualizar_usuario(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     u = crud.update_usuario(db, id, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
@@ -288,10 +292,12 @@ async def eliminar_usuario(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     crud.delete_usuario(db, id)
     response = HTMLResponse(
-        headers={'HX-Redirect': '/usuarios'},
         status_code=200
     )
     return response
@@ -305,7 +311,10 @@ async def listado_por_calificar(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador' and user.id != id:
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     usuario = crud.get_usuario(db, id)
     fichas_pendientes = [
         ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
@@ -335,7 +344,10 @@ async def get_evaluados(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
         "listado-evaluados.tpl.html",
@@ -351,7 +363,10 @@ async def get_evaluado(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     if id == 'nuevo':
         evaluado = None
     else:
@@ -374,7 +389,10 @@ async def nuevo_evaluado(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     evalua = crud.create_evaluado(db, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
@@ -393,7 +411,10 @@ async def actualizar_evaluado(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     evalua = crud.update_evaluado(db, id, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
@@ -409,10 +430,12 @@ async def eliminar_evaluado(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     crud.delete_evaluado(db, id)
     response = HTMLResponse(
-        headers={'HX-Redirect': '/evaluados'},
         status_code=200
     )
     return response
@@ -425,7 +448,10 @@ async def get_fichas(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     fichas = crud.get_all_fichas(db)
     return templates.TemplateResponse(
         "listado-fichas.tpl.html",
@@ -441,7 +467,10 @@ async def get_ficha(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     if id == 'nueva':
         ficha = None
     else:
@@ -467,7 +496,10 @@ async def nueva_ficha(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     f = crud.create_ficha(db, ficha)
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
@@ -495,7 +527,10 @@ async def actualizar_ficha(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     ficha = models.FichaCalificacion.model_validate(ficha)
     f = crud.update_ficha(db, id, ficha)
     usuarios = crud.get_usuarios_activos(db)
@@ -521,10 +556,12 @@ async def eliminar_ficha(
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
-        raise ForbiddenException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     crud.delete_ficha(db, id)
     response = HTMLResponse(
-        headers={'HX-Redirect': '/fichas'},
         status_code=200
     )
     return response
@@ -554,7 +591,7 @@ async def calificar_ficha(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
-    f = crud.calificar_ficha(db, id, ficha)
+    _ = crud.calificar_ficha(db, id, ficha)
     resp = await listado_propios_por_calificar(request, user)
     resp.headers.update(show_message("Se guardó la calificación", "success"))
     resp.headers.update({'HX-Push-Url': '/por-calificar'})
