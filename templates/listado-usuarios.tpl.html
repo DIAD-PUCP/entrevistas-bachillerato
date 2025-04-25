@@ -21,7 +21,10 @@
                 <td>{{usuario.apellido_paterno}} {{usuario.apellido_materno}}, {{usuario.nombres}}</td>
                 <td>{{usuario.perfil}}</td>
                 <td>{% if usuario.activo %}<i class="bi bi-check"></i>{% else %}-{% endif %}</td>
-                <td><a class="btn btn-sm btn-primary" href="/usuario/{{usuario.id}}">Editar</a> <a class="btn btn-sm btn-danger" hx-delete="/usuario/{{usuario.id}}">Eliminar</a></td>
+                <td>
+                    <a class="btn btn-sm btn-primary" href="/usuario/{{usuario.id}}">Editar</a>
+                    <a class="btn btn-sm btn-danger" hx-delete="/usuario/{{usuario.id}}" hx-target="closest tr">Eliminar</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
