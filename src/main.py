@@ -229,7 +229,6 @@ async def get_usuario(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
-    print(user.perfil)
     if user.perfil != 'Administrador':
         raise ForbiddenException(status.HTTP_403_FORBIDDEN)
     if id == 'nuevo':
