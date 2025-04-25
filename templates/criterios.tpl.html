@@ -1,0 +1,23 @@
+{% extends "base.tpl.html" %}
+{% block content %}
+<form id="criterios" 
+    hx-patch="/criterios"
+    hx-target="this"
+    hx-swap="outerHTML"
+    hx-select="#criterios"
+>
+<input type="hidden" id="id" name="id" value="{% if criterios %}{{criterios.id}}{% else %}1{% endif %}">
+{% for i in range(1,5) %}
+{% set c = 'criterio' + (i|string()) %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label for="{{c}}" class="form-label" id="label-{{c}}">{{c}}:</label>
+        <input id="{{c}}" class="form-control" type="text" name="{{c}}" value="{% if criterios %}{{criterios[c]}}{% endif %}" required>
+    </div>
+</div>
+{% endfor %}
+<div class="container d-flex justify-content-start">
+    <button id="guardar" class="my-1 btn btn-primary" form="criterios">Guardar</button>
+</div>
+</form>
+{% endblock %}

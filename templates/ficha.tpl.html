@@ -48,7 +48,7 @@
     {% set c = 'criterio' + (i|string()) %}
     <div class="row mb-3">
         <div class="col-md-6">
-            <label class="form-label row" id="label-{{c}}">{{c}}:</label>
+            <span class="form-label" id="label-{{c}}">{{c}}:&nbsp;&nbsp;&nbsp;&nbsp;</span>
             {% for j in range(1,5) %}
             <div class="form-check form-check-inline">
                 <input type="radio" class="form-check-input" name="{{c}}" value="{{j}}" id="{{c}}-{{j}}" {% if ficha[c] == j %}checked{% endif %}>

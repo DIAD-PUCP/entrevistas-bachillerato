@@ -623,18 +623,18 @@ async def ver_criterios(
         )
     criterios = crud.get_decripciones_criterios(db)
     return templates.TemplateResponse(
-        "criterios.tpl.html",{
-            "request":request,
-            "criterios":criterios,
-            "user":user
+        "criterios.tpl.html", {
+            "request": request,
+            "criterios": criterios,
+            "user": user
         }
     )
 
 
-@app.patch("/criterios/",response_class=HTMLResponse)
+@app.patch("/criterios/", response_class=HTMLResponse)
 async def actualizar_criterios(
     request: Request,
-    criterios: models.DescCriterios,
+    criterios: Annotated[models.DescCriterios, Form()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -643,13 +643,15 @@ async def actualizar_criterios(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    criterios = crud.set_decripciones_criterios(db,criterios)
-    resp =  templates.TemplateResponse(
-        "criterios.tpl.html",{
-            "request":request,
-            "criterios":criterios,
-            "user":user
+    criterios = crud.set_decripciones_criterios(db, criterios)
+    resp = templates.TemplateResponse(
+        "criterios.tpl.html", {
+            "request": request,
+            "criterios": criterios,
+            "user": user
         }
     )
-    resp.headers.update(show_message("Se actualizaron los criterios", "success"))
+    resp.headers.update(
+        show_message("Se actualizaron los criterios", "success")
+    )
     return resp
