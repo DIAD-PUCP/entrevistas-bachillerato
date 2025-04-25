@@ -587,6 +587,11 @@ async def ver_calificar_ficha(
     user: models.Usuario = Security(get_current_active_user)
 ):
     ficha = crud.get_ficha(db, ficha_id)
+    if user.perfil != 'Administrador' and user.id != ficha.calificador_id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     desc_crit = crud.get_decripciones_criterios(db)
     return templates.TemplateResponse(
         'calificar.tpl.html',
@@ -603,7 +608,12 @@ async def calificar_ficha(
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
-    _ = crud.calificar_ficha(db, ficha_id, ficha)
+    f = crud.calificar_ficha(db, ficha_id, ficha)
+    if user.perfil != 'Administrador' and user.id != f.calificador_id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
     resp = await listado_propios_por_calificar(request, user)
     resp.headers.update(show_message("Se guardó la calificación", "success"))
     resp.headers.update({'HX-Push-Url': '/por-calificar'})
