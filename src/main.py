@@ -98,7 +98,10 @@ async def get_current_active_user(
     current_user: Annotated[models.Usuario, Depends(get_current_user)],
 ) -> models.Usuario:
     if not current_user.activo:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Usuario inactivo")
+        raise AuthException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario inactivo"
+        )
     return current_user
 
 
@@ -151,10 +154,10 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
 
 
 @app.exception_handler(HTTPException)
-async def forbidden_exception_handler(request: Request, exc:HTTPException) -> HTMLResponse:
+async def forbidden_exception_handler(request: Request, exc: HTTPException) -> HTMLResponse:
     res = templates.TemplateResponse(
         'error.tpl.html',
-        {"request": request, 'msg':exc.detail},
+        {"request": request, 'msg': exc.detail},
         status_code=exc.status_code
     )
     return res
@@ -172,7 +175,7 @@ async def login_for_access_token(
     target: Annotated[str, Query()] = '/',
     db: Session = Depends(get_session)
 ):
-    user = authenticate_user(db, login_data.usuario, login_data.password)
+    user = authenticate_user(db, login_data.email, login_data.password)
     if not user:
         return templates.TemplateResponse(
             'login.tpl.html',
@@ -180,7 +183,7 @@ async def login_for_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers=show_message('Usuario o contraseña incorrectos', 'danger')
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES) # type: ignore
     access_token = create_access_token(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
@@ -195,6 +198,7 @@ async def login_for_access_token(
 async def logout():
     response = RedirectResponse('/login', status_code=status.HTTP_302_FOUND)
     response.set_cookie(key='token', value='', expires=-1)
+    response.headers.update(show_message('Se cerró sesión', 'success'))
     return response
 
 
@@ -316,6 +320,8 @@ async def listado_por_calificar(
             detail="No cuenta con los suficientes permisos para esta acción"
         )
     usuario = crud.get_usuario(db, id)
+    if not usuario:
+        raise HTTPException(status_code=404, detail="No se encontró usuario")
     fichas_pendientes = [
         ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
     return templates.TemplateResponse(

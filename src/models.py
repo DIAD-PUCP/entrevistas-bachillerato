@@ -5,7 +5,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 
 class LoginData(BaseModel):
-    usuario: str
+    email: str
     password: str
 
 
