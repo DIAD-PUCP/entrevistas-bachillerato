@@ -36,6 +36,10 @@ class AuthException(HTTPException):
 
 
 class ForbiddenException(HTTPException):
+    status_code: int = status.HTTP_403_FORBIDDEN
+
+
+class NotFoundException(HTTPException):
     pass
 
 
@@ -102,7 +106,7 @@ async def get_current_active_user(
     current_user: Annotated[models.Usuario, Depends(get_current_user)],
 ) -> models.Usuario:
     if not current_user.activo:
-        raise HTTPException(status_code=400, detail="Usuario inactivo")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Usuario inactivo")
     return current_user
 
 
@@ -147,7 +151,7 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
     res = templates.TemplateResponse(
         'login.tpl.html',
         {"request": request, "target": request.url.path},
-        status_code=200,
+        status_code=exc.status_code,
         headers={'HX-Push-Url': f'/login?target={request.url.path}'}
     )
     res.headers.update(msg)
@@ -157,9 +161,9 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
 @app.exception_handler(ForbiddenException)
 async def forbidden_exception_handler(request: Request, exc: ForbiddenException) -> HTMLResponse:
     res = templates.TemplateResponse(
-        'forbidden.tpl.html',
-        {"request": request},
-        status_code=status.HTTP_403_FORBIDDEN
+        'error.tpl.html',
+        {"request": request, 'msg':"No cuenta con los suficientes permisos para esta acción"},
+        status_code=exc.status_code
     )
     return res
 
