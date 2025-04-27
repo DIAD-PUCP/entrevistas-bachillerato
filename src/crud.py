@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import HTTPException
 from passlib.hash import bcrypt
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 from . import models
 
 
@@ -165,3 +165,26 @@ def set_decripciones_criterios(db: Session, criterios: models.DescCriterios) -> 
     db.add(crit)
     db.commit()
     return crit
+
+def get_reporte_progreso(db: Session):
+    stmt = (
+        select(
+            models.FichaCalificacion.calificador_id,
+            models.FichaCalificacion.fecha_calificacion != None,
+            func.count(models.FichaCalificacion.id)
+        )
+        .group_by(
+            models.FichaCalificacion.calificador_id,
+            models.FichaCalificacion.fecha_calificacion != None
+        )
+    ).subquery()
+    stmt2 = (
+        select(
+            models.Usuario.apellido_paterno + ' ' + 
+            models.Usuario.apellido_materno + ', ' + 
+            models.Usuario.nombres,
+            stmt
+        )
+        .join(stmt)
+    )
+    return db.exec(stmt2).scalars().all()
