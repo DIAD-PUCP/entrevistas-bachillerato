@@ -156,6 +156,7 @@ def calificar_ficha(db: Session, ficha_id: str, ficha: models.FichaCalificacionB
 def get_decripciones_criterios(db: Session) -> Optional[models.DescCriterios]:
     return db.get(models.DescCriterios, 1)
 
+
 def set_decripciones_criterios(db: Session, criterios: models.DescCriterios) -> models.DescCriterios:
     crit = db.get(models.DescCriterios, 1)
     if not crit:
@@ -166,11 +167,16 @@ def set_decripciones_criterios(db: Session, criterios: models.DescCriterios) -> 
     db.commit()
     return crit
 
+
 def get_reporte_progreso(db: Session):
     stmt = (
         select(
             models.FichaCalificacion.calificador_id,
-            func.IF(models.FichaCalificacion.fecha_calificacion != None,'Calificado','Sin calificar').label('estado'),
+            func.IF(
+                models.FichaCalificacion.fecha_calificacion != None,
+                'Calificado',
+                'Sin calificar'
+            ).label('estado'),
             func.count(models.FichaCalificacion.id).label('cantidad')
         )
         .group_by(
@@ -180,12 +186,19 @@ def get_reporte_progreso(db: Session):
     ).subquery()
     stmt2 = (
         select(
-            (models.Usuario.apellido_paterno + ' ' + 
-            models.Usuario.apellido_materno + ', ' + 
-            models.Usuario.nombres).label('Calificador'),
+            (models.Usuario.apellido_paterno + ' ' +
+             models.Usuario.apellido_materno + ', ' +
+             models.Usuario.nombres).label('Calificador'),
             stmt.c.estado,
             stmt.c.cantidad
         )
         .join(stmt)
     )
-    return db.exec(stmt2).all()
+    res = db.exec(stmt2).all()
+    result = dict()
+    for calificador, estado, cantidad in res:
+        result.setdefault(
+            calificador, {'Calificado': 0, 'Sin calificar': 0}
+        ).update({estado: cantidad})
+
+    return result
