@@ -587,6 +587,8 @@ async def ver_calificar_ficha(
     user: models.Usuario = Security(get_current_active_user)
 ):
     ficha = crud.get_ficha(db, ficha_id)
+    if not ficha:
+        raise HTTPException(status_code=404, detail="No se encontró ficha")
     if user.perfil != 'Administrador' and user.id != ficha.calificador_id:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
