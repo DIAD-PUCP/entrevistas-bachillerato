@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import HTTPException
 from passlib.hash import bcrypt
-from sqlmodel import Session, func, select
+from sqlmodel import Session, func, select, column
 from . import models
 
 
@@ -170,21 +170,22 @@ def get_reporte_progreso(db: Session):
     stmt = (
         select(
             models.FichaCalificacion.calificador_id,
-            models.FichaCalificacion.fecha_calificacion != None,
-            func.count(models.FichaCalificacion.id)
+            func.IF(models.FichaCalificacion.fecha_calificacion != None,'Calificado','Sin calificar').label('estado'),
+            func.count(models.FichaCalificacion.id).label('cantidad')
         )
         .group_by(
             models.FichaCalificacion.calificador_id,
-            models.FichaCalificacion.fecha_calificacion != None
+            column('estado')
         )
     ).subquery()
     stmt2 = (
         select(
-            models.Usuario.apellido_paterno + ' ' + 
+            (models.Usuario.apellido_paterno + ' ' + 
             models.Usuario.apellido_materno + ', ' + 
-            models.Usuario.nombres,
-            stmt
+            models.Usuario.nombres).label('Calificador'),
+            stmt.c.estado,
+            stmt.c.cantidad
         )
         .join(stmt)
     )
-    return db.exec(stmt2).scalars().all()
+    return db.exec(stmt2).all()
