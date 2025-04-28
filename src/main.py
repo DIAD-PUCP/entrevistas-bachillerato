@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import Annotated, Optional
 import json
 import os
-from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request, Security
+from fastapi import Cookie, Depends, FastAPI, File, Form, HTTPException, Query, Request, Security, UploadFile
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -736,10 +736,9 @@ async def get_resultados(
         )
 
 
-@app.get('/usuarios/importar', response_class=HTMLResponse)
-async def cargar_usuarios(
+@app.get('/evaluados/importar', response_class=HTMLResponse)
+async def cargar_evaluados(
     request: Request,
-    db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
     if user.perfil != 'Administrador':
@@ -748,8 +747,31 @@ async def cargar_usuarios(
             detail="No cuenta con los suficientes permisos para esta acción"
         )
     return templates.TemplateResponse(
-        "cargar-usuarios.tpl.html", {
+        "cargar-evaluados.tpl.html", {
             "request": request,
             "user": user
         }
+    )
+
+@app.post('/evaluados/importar', response_class=HTMLResponse)
+async def importar_evaluados(
+    request: Request,
+    archivo: Annotated[UploadFile,File()],
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    df = pd.read_csv(archivo.file,dtype={'documento_identidad':str})
+    for _,e in df.iterrows():
+        eva = models.Evaluado.model_validate_json(e.to_json())
+        crud.create_evaluado(db,eva)
+    evaluados = crud.get_evaluados(db)
+    return templates.TemplateResponse(
+        "listado-evaluados.tpl.html",
+        {"request": request, "evaluados": evaluados, "user": user},
+        headers={'HX-Push-Url': '/evaluados'}
     )
