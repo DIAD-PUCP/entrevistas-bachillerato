@@ -48,11 +48,17 @@
     </div>
     <div class="row mb-3">
         <div class="col-md-6">
+            <label for="password_confirm" class="form-label">Confirmar password:</label>
+            <input id="password_confirm" class="form-control" type="password" name="password_confirm" {% if not usuario %}required{% endif %}>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
             <label for="perfil" class="form-label">Perfil:</label>
             <select id="perfil" class="form-select" name="perfil" required>
                 <option value="">- Seleccionar un perfil -</option>
                 {% for perfil in ["Administrador","Calificador"] %}
-                <option value="{{perfil}}" {% if perfil == usuario.perfil %}selected{% endif %}>{{perfil}}</option>
+                <option value="{{perfil}}" {% if usuario and (perfil == usuario.perfil) %}selected{% endif %}>{{perfil}}</option>
                 {% endfor %}
             </select>
         </div>

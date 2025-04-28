@@ -21,6 +21,7 @@ class UsuarioBase(SQLModel):
 
 class UsuarioCreate(UsuarioBase):
     password: str
+    password_confirm: str
 
 
 class UsuarioUpdate(UsuarioBase):
@@ -31,6 +32,7 @@ class UsuarioUpdate(UsuarioBase):
     activo: bool = False
     perfil: Optional[str] = None # type: ignore
     password: Optional[str] = None
+    password_confirm: Optional[str] = None
 
 
 class Usuario(UsuarioBase, table=True):

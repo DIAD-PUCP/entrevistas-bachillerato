@@ -266,6 +266,12 @@ async def nuevo_usuario(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
+    if usuario.password != usuario.password_confirm:
+        return templates.TemplateResponse(
+            "usuario.tpl.html",
+            context={"request": request, "user": user},
+            headers=show_message('Los password no coinciden.', 'danger')
+        )
     u = crud.create_usuario(db, usuario)
     return templates.TemplateResponse(
         "usuario.tpl.html",
@@ -287,6 +293,12 @@ async def actualizar_usuario(
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    if usuario.password != usuario.password_confirm:
+        return templates.TemplateResponse(
+            "usuario.tpl.html",
+            context={"request": request, "usuario": usuario, "user": user},
+            headers=show_message('Los password no coinciden.', 'danger')
         )
     u = crud.update_usuario(db, user_id, usuario)
     return templates.TemplateResponse(
@@ -705,7 +717,7 @@ async def get_resultados(
         )
     fichas = crud.get_reporte_resultados(db, download)
     if download:
-        df = pd.read_sql(fichas,db.bind) # type: ignore
+        df = pd.read_sql(fichas, db.bind)  # type: ignore
         buffer = BytesIO()
         with pd.ExcelWriter(buffer) as writer:
             df.to_excel(writer, index=False)
@@ -722,3 +734,22 @@ async def get_resultados(
                 "user": user
             }
         )
+
+
+@app.get('/usuarios/importar', response_class=HTMLResponse)
+async def cargar_usuarios(
+    request: Request,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    return templates.TemplateResponse(
+        "cargar-usuarios.tpl.html", {
+            "request": request,
+            "user": user
+        }
+    )
