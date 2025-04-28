@@ -24,12 +24,12 @@ class UsuarioCreate(UsuarioBase):
 
 
 class UsuarioUpdate(UsuarioBase):
-    nombres: Optional[str] = None
-    apellido_paterno: Optional[str] = None
-    apellido_materno: Optional[str] = None
-    email: Optional[EmailStr] = None
+    nombres: Optional[str] = None # type: ignore
+    apellido_paterno: Optional[str] = None # type: ignore
+    apellido_materno: Optional[str] = None # type: ignore
+    email: Optional[EmailStr] = None # type: ignore
     activo: bool = False
-    perfil: Optional[str] = None
+    perfil: Optional[str] = None # type: ignore
     password: Optional[str] = None
 
 

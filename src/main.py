@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from typing import Annotated, Optional
 import json
 import os
 from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Query, Request, Security
 from fastapi.concurrency import asynccontextmanager
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
+import pandas as pd
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Session, create_engine
@@ -15,7 +17,6 @@ from dotenv import load_dotenv
 from starlette import status
 from . import models
 from . import crud
-
 load_dotenv()
 
 sqlite_file_name = os.getenv('DATABASE_FILE', "database.db")
@@ -668,6 +669,7 @@ async def actualizar_criterios(
     )
     return resp
 
+
 @app.get("/reporte-estado", response_class=HTMLResponse)
 async def reporte_estado(
     request: Request,
@@ -680,7 +682,6 @@ async def reporte_estado(
             detail="No cuenta con los suficientes permisos para esta acción"
         )
     calificadores = crud.get_reporte_progreso(db)
-    print(calificadores)
     return templates.TemplateResponse(
         "reporte-estado.tpl.html", {
             "request": request,
@@ -688,3 +689,36 @@ async def reporte_estado(
             "user": user
         }
     )
+
+
+@app.get("/reporte-resultados", response_class=HTMLResponse)
+async def get_resultados(
+    request: Request,
+    download: Annotated[bool, Query()] = False,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    fichas = crud.get_reporte_resultados(db, download)
+    if download:
+        df = pd.read_sql(fichas,db.bind) # type: ignore
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer) as writer:
+            df.to_excel(writer, index=False)
+        return StreamingResponse(
+            BytesIO(buffer.getvalue()),
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={"Content-Disposition": "attachment; filename=resultados.xlsx"}
+        )
+    else:
+        return templates.TemplateResponse(
+            "reporte-resultados.tpl.html", {
+                "request": request,
+                "fichas": fichas,
+                "user": user
+            }
+        )

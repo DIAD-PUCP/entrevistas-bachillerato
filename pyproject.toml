@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.12",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
     "passlib[bcrypt]>=1.7.4",
     "pydantic[email]>=2.11.3",
     "pyjwt>=2.10.1",

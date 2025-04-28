@@ -177,7 +177,7 @@ def get_reporte_progreso(db: Session):
                 'Calificado',
                 'Sin calificar'
             ).label('estado'),
-            func.count(models.FichaCalificacion.id).label('cantidad')
+            func.count(models.FichaCalificacion.id).label('cantidad') # type: ignore
         )
         .group_by(
             models.FichaCalificacion.calificador_id,
@@ -188,7 +188,7 @@ def get_reporte_progreso(db: Session):
         select(
             (models.Usuario.apellido_paterno + ' ' +
              models.Usuario.apellido_materno + ', ' +
-             models.Usuario.nombres).label('Calificador'),
+             models.Usuario.nombres).label('Calificador'), # type: ignore
             stmt.c.estado,
             stmt.c.cantidad
         )
@@ -202,3 +202,37 @@ def get_reporte_progreso(db: Session):
         ).update({estado: cantidad})
 
     return result
+
+def get_reporte_resultados(db: Session, downloads: bool = False):
+    stmt = (
+        select(
+            models.FichaCalificacion
+        )
+        .where(models.FichaCalificacion.fecha_calificacion != None)
+    )
+    if downloads:
+        return (
+            select(
+                models.FichaCalificacion,
+                models.Usuario,
+                models.Evaluado
+            )
+            .join(models.Evaluado)
+            .join(models.Usuario)
+            .with_only_columns(
+                (models.FichaCalificacion.id).label('Ficha'), # type: ignore
+                (models.FichaCalificacion.evaluado_id).label('Evaluado'), # type: ignore
+                models.Evaluado.carrera, # type: ignore
+                (models.Usuario.apellido_paterno + ' ' +
+                models.Usuario.apellido_materno + ', ' +
+                models.Usuario.nombres).label('Calificador'), # type: ignore
+                models.FichaCalificacion.criterio1, # type: ignore
+                models.FichaCalificacion.criterio2, # type: ignore
+                models.FichaCalificacion.criterio3, # type: ignore
+                models.FichaCalificacion.criterio4, # type: ignore
+                models.FichaCalificacion.comentario, # type: ignore
+                models.FichaCalificacion.fecha_calificacion # type: ignore
+            ) # type: ignore
+        )
+    else:
+        return db.exec(stmt).all()
