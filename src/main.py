@@ -667,3 +667,24 @@ async def actualizar_criterios(
         show_message("Se actualizaron los criterios", "success")
     )
     return resp
+
+@app.get("/reporte-estado", response_class=HTMLResponse)
+async def reporte_estado(
+    request: Request,
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    calificadores = crud.get_reporte_progreso(db)
+    print(calificadores)
+    return templates.TemplateResponse(
+        "reporte-estado.tpl.html", {
+            "request": request,
+            "calificadores": calificadores,
+            "user": user
+        }
+    )

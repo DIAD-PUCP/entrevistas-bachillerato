@@ -1,0 +1,25 @@
+{% extends "base.tpl.html" %}
+{% block content %}
+<div class="table-responsive">
+    <table class="table" hx-boost="true">
+        <thead>
+            <tr>
+                <th>Calificador</th>
+                <th>Calificados</th>
+                <th>No calificados</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for calif,res in calificadores.items() %}
+            <tr>
+                <td>{{calif}}</td>
+                <td>{{res['Calificado']}}</td>
+                <td>{{res['Sin calificar']}}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center"> No hay datos</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
