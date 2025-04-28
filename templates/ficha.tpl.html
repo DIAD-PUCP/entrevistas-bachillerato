@@ -22,7 +22,7 @@
             <select id="evaluado_id" class="form-select" name="evaluado_id" required>
                 <option value="">- Seleccionar un evaluado -</option>
                 {% for evaluado in evaluados %}
-                <option value="{{evaluado.id}}" {% if ficha and (ficha.evaluado_id == evaluado.id) %}selected{% endif %}>{{evaluado.nombres}} {{evaluado.apellido_paterno}} {{evaluado.apellido_materno}}</option>
+                <option value="{{evaluado.id}}" {% if ficha and (ficha.evaluado_id == evaluado.id) %}selected{% endif %}>{{evaluado.apellido_paterno}} {{evaluado.apellido_materno}}, {{evaluado.nombres}}</option>
                 {% endfor %}
             </select>
         </div>
