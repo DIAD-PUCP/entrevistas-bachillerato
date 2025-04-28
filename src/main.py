@@ -753,10 +753,11 @@ async def cargar_evaluados(
         }
     )
 
+
 @app.post('/evaluados/importar', response_class=HTMLResponse)
 async def importar_evaluados(
     request: Request,
-    archivo: Annotated[UploadFile,File()],
+    archivo: Annotated[UploadFile, File()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -765,13 +766,57 @@ async def importar_evaluados(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    df = pd.read_csv(archivo.file,dtype={'documento_identidad':str})
-    for _,e in df.iterrows():
+    df = pd.read_csv(archivo.file, dtype={'documento_identidad': str})
+    for _, e in df.iterrows():
         eva = models.Evaluado.model_validate_json(e.to_json())
-        crud.create_evaluado(db,eva)
+        crud.create_evaluado(db, eva)
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
         "listado-evaluados.tpl.html",
         {"request": request, "evaluados": evaluados, "user": user},
         headers={'HX-Push-Url': '/evaluados'}
+    )
+
+
+@app.get('/usuarios/importar', response_class=HTMLResponse)
+async def cargar_usuarios(
+    request: Request,
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    return templates.TemplateResponse(
+        "cargar-usuarios.tpl.html", {
+            "request": request,
+            "user": user
+        }
+    )
+
+
+@app.post('/usuarios/importar', response_class=HTMLResponse)
+async def importar_usuarios(
+    request: Request,
+    archivo: Annotated[UploadFile, File()],
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    df = pd.read_csv(archivo.file, dtype={'id': str})
+    for _, u in df.iterrows():
+        data = u.to_dict()
+        data['password_confirm'] = data['password']
+        usuario = models.UsuarioCreate.model_validate(data)
+        crud.create_usuario(db, usuario)
+    usuarios = crud.get_all_usuarios(db)
+    return templates.TemplateResponse(
+        "listado-usuarios.tpl.html",
+        {"request": request, "usuarios": usuarios, "user": user},
+        headers={'HX-Push-Url': '/usuarios'}
     )

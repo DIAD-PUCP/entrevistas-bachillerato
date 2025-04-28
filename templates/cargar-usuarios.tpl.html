@@ -1,0 +1,15 @@
+{% extends "base.tpl.html" %}
+{% block content %}
+<h2>Cargar usuarios</h2>
+<form hx-boost="true" id="cargar-usuarios" method="POST" enctype="multipart/form-data" action="/usuarios/importar">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="arhcivo" class="form-label">Archivo:</label>
+            <input id="archivo" class="form-control" type="file" name="archivo" required>
+        </div>
+    </div>
+    <div class="container d-flex justify-content-center">
+        <button id="importar" class="my-4 btn btn-primary" form="cargar-usuarios">Importar</button>
+    </div>
+</form>
+{% endblock %}
