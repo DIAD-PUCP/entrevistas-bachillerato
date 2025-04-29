@@ -820,3 +820,44 @@ async def importar_usuarios(
         {"request": request, "usuarios": usuarios, "user": user},
         headers={'HX-Push-Url': '/usuarios'}
     )
+
+@app.get('/fichas/importar', response_class=HTMLResponse)
+async def cargar_fichas(
+    request: Request,
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    return templates.TemplateResponse(
+        "cargar-fichas.tpl.html", {
+            "request": request,
+            "user": user
+        }
+    )
+
+
+@app.post('/fichas/importar', response_class=HTMLResponse)
+async def importar_fichas(
+    request: Request,
+    archivo: Annotated[UploadFile, File()],
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != 'Administrador':
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción"
+        )
+    df = pd.read_csv(archivo.file, dtype={'id': str})
+    for _, f in df.iterrows():
+        ficha = models.FichaCalificacion.model_validate(f.to_dict())
+        crud.create_ficha(db, ficha)
+    fichas = crud.get_all_fichas(db)
+    return templates.TemplateResponse(
+        "listado-fichas.tpl.html",
+        {"request": request, "fichas": fichas, "user": user},
+        headers={'HX-Push-Url': '/fichas'}
+    )
