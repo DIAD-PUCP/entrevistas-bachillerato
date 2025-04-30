@@ -1,9 +1,20 @@
 from datetime import datetime, timedelta, timezone
-from io import BytesIO, StringIO
+from io import BytesIO
 from typing import Annotated, Optional
 import json
 import os
-from fastapi import Cookie, Depends, FastAPI, File, Form, HTTPException, Query, Request, Security, UploadFile
+from fastapi import (
+    Cookie,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    Security,
+    UploadFile
+)
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -831,6 +842,7 @@ async def importar_usuarios(
         {"request": request, "usuarios": usuarios, "user": user},
         headers={'HX-Push-Url': '/usuarios'}
     )
+
 
 @app.get('/fichas/importar', response_class=HTMLResponse)
 async def cargar_fichas(
