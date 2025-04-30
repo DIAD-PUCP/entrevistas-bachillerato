@@ -28,6 +28,7 @@ from dotenv import load_dotenv
 from starlette import status
 from . import models
 from . import crud
+
 load_dotenv()
 
 sqlite_file_name = os.getenv('DATABASE_FILE', "database.db")
@@ -40,7 +41,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = os.getenv('SECRET_KEY', "")
 ALGORITHM = os.getenv('ALGORITHM', "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 240)
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', '240'))
 
 
 class AuthException(HTTPException):
@@ -66,7 +68,7 @@ def get_session():
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     create_db_and_tables()
     yield
 
@@ -874,7 +876,8 @@ async def importar_fichas(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    df = pd.read_csv(archivo.file, dtype={'id': str,'calificador_id':str,'evaluado_id':str})
+    df = pd.read_csv(archivo.file, dtype={
+                     'id': str, 'calificador_id': str, 'evaluado_id': str})
     for _, f in df.iterrows():
         ficha = models.FichaCalificacion.model_validate(f.to_dict())
         crud.create_ficha(db, ficha)
