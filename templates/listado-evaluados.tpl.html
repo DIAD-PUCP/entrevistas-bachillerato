@@ -26,7 +26,7 @@
                 <td>{{evaluado.colegio}}</td>
                 <td>
                     <a class="btn btn-sm btn-primary" href="/evaluado/{{evaluado.id}}">Editar</a>
-                    <a class="btn btn-sm btn-danger" hx-delete="/evaluado/{{evaluado.id}}" hx-target="closest tr">Eliminar</a>
+                    <a class="btn btn-sm btn-danger" hx-delete="/evaluado/{{evaluado.id}}" hx-confirm="Seguro que desea eliminar este registro?, esta acción no se puede deshacer" hx-target="closest tr">Eliminar</a>
                 </td>
             </tr>
             {% else %}
