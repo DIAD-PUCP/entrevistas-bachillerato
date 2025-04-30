@@ -321,7 +321,7 @@ async def eliminar_usuario(
         )
     crud.delete_usuario(db, user_id)
     response = HTMLResponse(
-        status_code=200
+        status_code=status.HTTP_200_OK
     )
     return response
 
@@ -340,7 +340,10 @@ async def listado_por_calificar(
         )
     usuario = crud.get_usuario(db, user_id)
     if not usuario:
-        raise HTTPException(status_code=404, detail="No se encontró usuario")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontró usuario"
+        )
     fichas_pendientes = [
         ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None]
     return templates.TemplateResponse(
@@ -398,7 +401,9 @@ async def get_evaluado(
         evaluado = db.get(models.Evaluado, evaluado_id)
         if not evaluado:
             raise HTTPException(
-                status_code=404, detail="No se encontró evaluado")
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No se encontró evaluado"
+            )
     return templates.TemplateResponse(
         "evaluado.tpl.html", {"request": request,
                               "evaluado": evaluado,
@@ -461,7 +466,7 @@ async def eliminar_evaluado(
         )
     crud.delete_evaluado(db, evaluado_id)
     response = HTMLResponse(
-        status_code=200
+        status_code=status.HTTP_200_OK
     )
     return response
 
@@ -501,7 +506,10 @@ async def get_ficha(
     else:
         ficha = db.get(models.FichaCalificacion, ficha_id)
         if not ficha:
-            raise HTTPException(status_code=404, detail="No se encontró ficha")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No se encontró ficha"
+            )
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse("ficha.tpl.html", {
@@ -587,7 +595,7 @@ async def eliminar_ficha(
         )
     crud.delete_ficha(db, ficha_id)
     response = HTMLResponse(
-        status_code=200
+        status_code=status.HTTP_200_OK
     )
     return response
 
@@ -601,7 +609,10 @@ async def ver_calificar_ficha(
 ):
     ficha = crud.get_ficha(db, ficha_id)
     if not ficha:
-        raise HTTPException(status_code=404, detail="No se encontró ficha")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontró ficha"
+        )
     if user.perfil != 'Administrador' and user.id != ficha.calificador_id:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
