@@ -874,7 +874,7 @@ async def importar_fichas(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
-    df = pd.read_csv(archivo.file, dtype={'id': str})
+    df = pd.read_csv(archivo.file, dtype={'id': str,'calificador_id':str,'evaluado_id':str})
     for _, f in df.iterrows():
         ficha = models.FichaCalificacion.model_validate(f.to_dict())
         crud.create_ficha(db, ficha)
