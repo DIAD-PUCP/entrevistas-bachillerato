@@ -39,6 +39,18 @@ def create_usuario(db: Session, usuario: models.UsuarioCreate) -> models.Usuario
     return user
 
 
+def create_usuarios(db: Session, usuarios: list[models.UsuarioCreate]) -> list[models.Usuario]:
+    users = []
+    for usuario in usuarios:
+        user_data = usuario.model_dump()
+        user_data['hashed_password'] = bcrypt.hash(user_data['password'])
+        user = models.Usuario.model_validate(user_data)
+        db.add(user)
+        users.append(user)
+    db.commit()
+    return users
+
+
 def update_usuario(db: Session, usuario_id: str, usuario: models.UsuarioUpdate) -> models.Usuario:
     user = db.get(models.Usuario, usuario_id)
     if not user:
@@ -85,6 +97,17 @@ def create_evaluado(db: Session, evaluado: models.EvaluadoForm) -> models.Evalua
     return evalua
 
 
+def create_evaluados(db: Session, evaluados: list[models.EvaluadoForm]) -> list[models.Evaluado]:
+    evs = []
+    for evaluado in evaluados:
+        evaluado_data = evaluado.model_dump()
+        evalua = models.Evaluado.model_validate(evaluado_data)
+        db.add(evalua)
+        evs.append(evalua)
+    db.commit()
+    return evs
+
+
 def update_evaluado(db: Session, evaluado_id: str, evaluado: models.EvaluadoForm) -> models.Evaluado:
     evalua = db.get(models.Evaluado, evaluado_id)
     if not evalua:
@@ -120,6 +143,17 @@ def create_ficha(db: Session, ficha: models.FichaCalificacion) -> models.FichaCa
     db.add(f)
     db.commit()
     return f
+
+
+def create_fichas(db: Session, fichas: list[models.FichaCalificacion]) -> list[models.FichaCalificacion]:
+    fs = []
+    for ficha in fichas:
+        ficha_data = ficha.model_dump()
+        f = models.FichaCalificacion.model_validate(ficha_data)
+        db.add(f)
+        fs.append(f)
+    db.commit()
+    return fs
 
 
 def update_ficha(db: Session, ficha_id: str, ficha: models.FichaCalificacion) -> models.FichaCalificacion:
