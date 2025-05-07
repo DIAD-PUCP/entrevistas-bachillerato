@@ -98,13 +98,13 @@
             toastBody.innerText = e.detail['text'];
             toast.show();
         });
-        const swalPUCP = Swal.mixin({
-            customClass: {
-                confirmButton: "btn btn-success",
-                cancelButton: "btn btn-danger"
-            }
-        });
         document.addEventListener("htmx:confirm",e => {
+            const swalPUCP = Swal.mixin({
+                customClass: {
+                    confirmButton: "btn btn-success",
+                    cancelButton: "btn btn-danger"
+                }
+            });
             // The event is triggered on every trigger for a request, so we need to check if the element
             // that triggered the request has a confirm question set via the hx-confirm attribute,
             // if not we can return early and let the default behavior happen
