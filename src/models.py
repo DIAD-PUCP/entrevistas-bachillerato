@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Annotated, Any, Optional
+from fastapi import UploadFile
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel, EmailStr, field_validator
 
@@ -25,12 +26,12 @@ class UsuarioCreate(UsuarioBase):
 
 
 class UsuarioUpdate(UsuarioBase):
-    nombres: Optional[str] = None # type: ignore
-    apellido_paterno: Optional[str] = None # type: ignore
-    apellido_materno: Optional[str] = None # type: ignore
-    email: Optional[EmailStr] = None # type: ignore
+    nombres: Optional[str] = None  # type: ignore
+    apellido_paterno: Optional[str] = None  # type: ignore
+    apellido_materno: Optional[str] = None  # type: ignore
+    email: Optional[EmailStr] = None  # type: ignore
     activo: bool = False
-    perfil: Optional[str] = None # type: ignore
+    perfil: Optional[str] = None  # type: ignore
     password: Optional[str] = None
     password_confirm: Optional[str] = None
 
@@ -45,7 +46,7 @@ class Usuario(UsuarioBase, table=True):
     )
 
 
-class Evaluado(SQLModel, table=True):
+class EvaluadoBase(SQLModel):
     id: str = Field(primary_key=True)
     documento_identidad: Annotated[str, Field(unique=True, index=True)]
     nombres: str
@@ -54,9 +55,17 @@ class Evaluado(SQLModel, table=True):
     carrera: str
     edad: int
     colegio: str
+
+
+class Evaluado(EvaluadoBase, table=True):
     ensayo: str
     fichas: list["FichaCalificacion"] = Relationship(
         back_populates='evaluado')
+
+
+class EvaluadoForm(EvaluadoBase):
+    ensayo: Optional[str] = None
+    archivo: Optional[UploadFile] = None
 
 
 class FichaCalificacionBase(SQLModel):

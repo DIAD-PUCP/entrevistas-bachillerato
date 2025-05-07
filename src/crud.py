@@ -77,7 +77,7 @@ def get_evaluado_by_doc(db: Session, doc: str) -> Optional[models.Evaluado]:
     ).first()
 
 
-def create_evaluado(db: Session, evaluado: models.Evaluado) -> models.Evaluado:
+def create_evaluado(db: Session, evaluado: models.EvaluadoForm) -> models.Evaluado:
     evaluado_data = evaluado.model_dump()
     evalua = models.Evaluado.model_validate(evaluado_data)
     db.add(evalua)
@@ -85,7 +85,7 @@ def create_evaluado(db: Session, evaluado: models.Evaluado) -> models.Evaluado:
     return evalua
 
 
-def update_evaluado(db: Session, evaluado_id: str, evaluado: models.Evaluado) -> models.Evaluado:
+def update_evaluado(db: Session, evaluado_id: str, evaluado: models.EvaluadoForm) -> models.Evaluado:
     evalua = db.get(models.Evaluado, evaluado_id)
     if not evalua:
         raise HTTPException(status_code=404, detail="No se encontró evaluado")

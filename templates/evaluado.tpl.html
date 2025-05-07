@@ -9,6 +9,7 @@
     hx-target="this"
     hx-swap="outerHTML"
     hx-select="#evaluado"
+    hx-encoding="multipart/form-data"
 >
     <div class="row mb-3">
         <div class="col-md-6">
@@ -60,8 +61,11 @@
     </div>
     <div class="row mb-3">
         <div class="col-md-6">
-            <label for="ensayo" class="form-label">Ensayo:</label>
-            <input id="ensayo" class="form-control" type="text" name="ensayo" value="{% if evaluado %}{{evaluado.ensayo}}{% endif %}" required>
+            <label for="archivo" class="form-label">Ensayo:</label>
+            {% if evaluado %}
+            <p><a href="{{evaluado.ensayo}}" target="_blank">Ver ensayo</a></p>
+            {% endif %}
+            <input id="archivo" class="form-control" type="file" name="archivo" accept="application/pdf" {% if not evaluado %}required{% endif %}>
         </div>
     </div>
     <div class="container d-flex justify-content-center">

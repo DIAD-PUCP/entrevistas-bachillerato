@@ -3,6 +3,7 @@ from io import BytesIO
 from typing import Annotated, Optional
 import json
 import os
+import os.path
 from fastapi import (
     Cookie,
     Depends,
@@ -424,10 +425,22 @@ async def get_evaluado(
     )
 
 
+async def save_file(file: UploadFile) -> str:
+    path = ""
+    if file.filename and file.filename.endswith('.pdf'):
+        filename, filext = os.path.splitext(os.path.basename(file.filename))
+        while os.path.exists(f'static/{filename}{filext}'):
+            filename = filename + '_1'
+        path = f'static/{filename}{filext}'
+        with open(path, 'wb') as f:
+            f.write(await file.read())
+    return "/" + path
+
+
 @app.post("/evaluado/nuevo", response_class=HTMLResponse)
 async def nuevo_evaluado(
     request: Request,
-    evaluado: Annotated[models.Evaluado, Form()],
+    evaluado: Annotated[models.EvaluadoForm, Form()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -436,6 +449,10 @@ async def nuevo_evaluado(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
+    if evaluado.archivo:
+        ruta = await save_file(evaluado.archivo)
+        if ruta:
+            evaluado.ensayo = ruta
     evalua = crud.create_evaluado(db, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
@@ -449,7 +466,7 @@ async def nuevo_evaluado(
 async def actualizar_evaluado(
     request: Request,
     evaluado_id: str,
-    evaluado: Annotated[models.Evaluado, Form()],
+    evaluado: Annotated[models.EvaluadoForm, Form()],
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -458,6 +475,10 @@ async def actualizar_evaluado(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción"
         )
+    if evaluado.archivo:
+        ruta = await save_file(evaluado.archivo)
+        if ruta:
+            evaluado.ensayo = ruta
     evalua = crud.update_evaluado(db, evaluado_id, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",
@@ -792,7 +813,7 @@ async def importar_evaluados(
         )
     df = pd.read_csv(archivo.file, dtype={'documento_identidad': str})
     for _, e in df.iterrows():
-        eva = models.Evaluado.model_validate_json(e.to_json())
+        eva = models.EvaluadoForm.model_validate_json(e.to_json())
         crud.create_evaluado(db, eva)
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
