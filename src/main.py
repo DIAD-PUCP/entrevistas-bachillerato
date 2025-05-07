@@ -337,6 +337,8 @@ async def eliminar_usuario(
     response = HTMLResponse(
         status_code=status.HTTP_200_OK
     )
+    response.headers.update(show_message('Se eliminó el usuario', 'success'))
+    response.headers['HX-Redirect'] = '/usuarios'
     return response
 
 
@@ -502,6 +504,8 @@ async def eliminar_evaluado(
     response = HTMLResponse(
         status_code=status.HTTP_200_OK
     )
+    response.headers.update(show_message('Se eliminó el evaluado', 'success'))
+    response.headers['HX-Redirect'] = '/evaluados'
     return response
 
 
@@ -631,6 +635,8 @@ async def eliminar_ficha(
     response = HTMLResponse(
         status_code=status.HTTP_200_OK
     )
+    response.headers.update(show_message('Se eliminó la ficha', 'success'))
+    response.headers['HX-Redirect'] = '/fichas'
     return response
 
 
