@@ -73,7 +73,7 @@
         <button id="crear" class="my-4 btn btn-primary" form="evaluado">Crear</button>
         {% else %}
         <button id="guardar" class="m-4 btn btn-primary" form="evaluado">Guardar</button>
-        <button id="eliminar" hx-delete="/evaluado/{{evaluado.id}}" hx-target="body" hx-swap="outerHTML" class="my-4 btn btn-danger" hx-confirm="Seguro que desea eliminar este registro?, esta acción no se puede deshacer">Eliminar</button>
+        <button id="eliminar" hx-delete="/evaluado/{{evaluado.id}}?redirect=true" hx-target="body" hx-swap="outerHTML" class="my-4 btn btn-danger" hx-confirm="Seguro que desea eliminar este registro?, esta acción no se puede deshacer">Eliminar</button>
         {% endif %}
     </div>
 </form>

@@ -325,6 +325,7 @@ async def actualizar_usuario(
 @app.delete("/usuario/{user_id}", response_class=HTMLResponse)
 async def eliminar_usuario(
     user_id: str,
+    redirect: Annotated[bool,Query()] = False,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -338,7 +339,8 @@ async def eliminar_usuario(
         status_code=status.HTTP_200_OK
     )
     response.headers.update(show_message('Se eliminó el usuario', 'success'))
-    response.headers['HX-Redirect'] = '/usuarios'
+    if redirect:
+        response.headers['HX-Redirect'] = '/usuarios'
     return response
 
 
@@ -492,6 +494,7 @@ async def actualizar_evaluado(
 @app.delete("/evaluado/{evaluado_id}", response_class=HTMLResponse)
 async def eliminar_evaluado(
     evaluado_id: str,
+    redirect: Annotated[bool,Query()] = False,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -505,7 +508,8 @@ async def eliminar_evaluado(
         status_code=status.HTTP_200_OK
     )
     response.headers.update(show_message('Se eliminó el evaluado', 'success'))
-    response.headers['HX-Redirect'] = '/evaluados'
+    if redirect:
+        response.headers['HX-Redirect'] = '/evaluados'
     return response
 
 
@@ -623,6 +627,7 @@ async def actualizar_ficha(
 @app.delete("/ficha/{ficha_id}", response_class=HTMLResponse)
 async def eliminar_ficha(
     ficha_id: str,
+    redirect: Annotated[bool,Query()] = False,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -636,7 +641,8 @@ async def eliminar_ficha(
         status_code=status.HTTP_200_OK
     )
     response.headers.update(show_message('Se eliminó la ficha', 'success'))
-    response.headers['HX-Redirect'] = '/fichas'
+    if redirect:
+        response.headers['HX-Redirect'] = '/fichas'
     return response
 
 
