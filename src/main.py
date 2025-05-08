@@ -845,9 +845,10 @@ async def importar_evaluados(
             detail="No cuenta con los suficientes permisos para esta acción"
         )
     df = pd.read_csv(archivo.file, dtype={'documento_identidad': str})
-    for _, e in df.iterrows():
-        eva = models.EvaluadoForm.model_validate_json(e.to_json())
-        crud.create_evaluado(db, eva)
+    evas = [models.EvaluadoForm.model_validate_json(
+        data.to_json()
+    ) for _, data in df.iterrows()]
+    evas = crud.create_evaluados(db, evas)
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
         "listado-evaluados.tpl.html",
@@ -887,11 +888,11 @@ async def importar_usuarios(
             detail="No cuenta con los suficientes permisos para esta acción"
         )
     df = pd.read_csv(archivo.file, dtype={'id': str})
-    for _, u in df.iterrows():
-        data = u.to_dict()
-        data['password_confirm'] = data['password']
-        usuario = models.UsuarioCreate.model_validate(data)
-        crud.create_usuario(db, usuario)
+    df['password_confirm'] = df['password']
+    users = [models.UsuarioCreate.model_validate_json(
+        data.to_json()
+    ) for _, data in df.iterrows()]
+    users = crud.create_usuarios(db, users)
     usuarios = crud.get_all_usuarios(db)
     return templates.TemplateResponse(
         "listado-usuarios.tpl.html",
@@ -932,9 +933,10 @@ async def importar_fichas(
         )
     df = pd.read_csv(archivo.file, dtype={
                      'id': str, 'calificador_id': str, 'evaluado_id': str})
-    for _, f in df.iterrows():
-        ficha = models.FichaCalificacion.model_validate(f.to_dict())
-        crud.create_ficha(db, ficha)
+    fs = [models.FichaCalificacion.model_validate_json(
+        data.to_json()
+    ) for _, data in df.iterrows()]
+    fs = crud.create_fichas(db, fs)
     fichas = crud.get_all_fichas(db)
     return templates.TemplateResponse(
         "listado-fichas.tpl.html",
