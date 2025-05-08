@@ -15,7 +15,7 @@ from fastapi import (
     Security,
     UploadFile
 )
-from starlette.exceptions import HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,8 +25,9 @@ import pandas as pd
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Session, create_engine
-from dotenv import load_dotenv
 from starlette import status
+from starlette.exceptions import HTTPException
+from dotenv import load_dotenv
 from . import models
 from . import crud
 
@@ -206,6 +207,14 @@ async def http_exception_handler(
             status_code=exc.status_code
         )
     return res
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_handler(
+    request: Request,
+    exc: RequestValidationError
+):
+    print(exc)
 
 
 @app.get('/login', response_class=HTMLResponse)
