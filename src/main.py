@@ -17,7 +17,7 @@ from fastapi import (
     UploadFile
 )
 from fastapi.concurrency import asynccontextmanager
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
@@ -135,7 +135,7 @@ async def get_current_active_user(
 ) -> models.Usuario:
     if not current_user.activo:
         raise AuthException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuario inactivo"
         )
     return current_user
@@ -174,7 +174,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.exception_handler(AuthException)
-async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLResponse:
+async def auth_exception_handler(request: Request, exc: AuthException):
     msg = show_message(
         exc.detail,
         'danger'
@@ -190,17 +190,15 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
 
 
 @app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
+async def http_exception_handler(
+    request: Request,
+    exc: HTTPException
+):
     if 'HX-Request' in request.headers:
-        res = JSONResponse(
-            content={'msg': exc.detail},
+        res = PlainTextResponse(
+            content=exc.detail,
             status_code=exc.status_code
         )
-        msg = show_message(
-            exc.detail,
-            'danger'
-        )
-        res.headers.update(msg)
     else:
         res = templates.TemplateResponse(
             'error.tpl.html',
@@ -224,11 +222,9 @@ async def login_for_access_token(
 ):
     user = authenticate_user(db, login_data.email, login_data.password)
     if not user:
-        return templates.TemplateResponse(
-            'login.tpl.html',
-            {"request": request, "target": target},
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers=show_message('Usuario o contraseña incorrectos', 'danger')
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario o contraseña incorrectos"
         )
     access_token_expires = timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES  # type: ignore

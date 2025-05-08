@@ -6,6 +6,55 @@
     <link rel="icon" href="/assets/img/favicon-32x32.png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/htmx.org@2.0.1" integrity="sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/" crossorigin="anonymous"></script>
+    <script>
+        function show_message(message,type){
+            const toastElement = document.getElementById("toast");
+            const toastBody = document.getElementById("toast-body");
+    
+            const toast = new bootstrap.Toast(toastElement, { delay: 2000 });
+            
+            toastElement.classList.add(`bg-${type}`);
+            if ((type == 'success') || (type == 'danger')){
+                toastElement.classList.add('text-white');
+            }
+            toastBody.innerText = message;
+            toast.show();
+        }
+        htmx.on("showMessage", e=> {
+            show_message(e.detail['text'],e.detail['type'])
+        });
+        document.addEventListener("htmx:responseError",e=>{
+            show_message(e.detail.xhr.response,"danger");
+        });
+        document.addEventListener("htmx:confirm",e => {
+            const swalPUCP = Swal.mixin({
+                customClass: {
+                    confirmButton: "btn btn-success",
+                    cancelButton: "btn btn-danger"
+                }
+            });
+            // The event is triggered on every trigger for a request, so we need to check if the element
+            // that triggered the request has a confirm question set via the hx-confirm attribute,
+            // if not we can return early and let the default behavior happen
+            if (!e.detail.question) return
+    
+            // This will prevent the request from being issued to later manually issue it
+            e.preventDefault()
+    
+            swalPUCP.fire({
+                title: "Continuar?",
+                text: e.detail.question,
+                showCancelButton: true,
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    // If the user confirms, we manually issue the request
+                    e.detail.issueRequest(true); // true to skip the built-in window.confirm()
+                }
+            })
+        });
+    </script>
     <link href="/assets/css/diad-bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap">
@@ -13,7 +62,10 @@
     <meta name="htmx-config" content='
     {"responseHandling": [
         {"code":"[23]..", "swap": true},
-        {"code":"4..", "swap": true, "error": true}
+        {"code":"422", "swap": true},
+        {"code":"401", "error": false},
+        {"code":"[45]..", "swap": false, "error": true},
+        {"code":"...", "swap": true}
     ]}' />
     {% block head %}
     {% endblock %}
@@ -84,49 +136,6 @@
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script>
-        htmx.on("showMessage", e => {
-            const toastElement = document.getElementById("toast");
-            const toastBody = document.getElementById("toast-body");
-    
-            const toast = new bootstrap.Toast(toastElement, { delay: 2000 });
-            
-            toastElement.classList.add(`bg-${e.detail['type']}`);
-            if ((e.detail['type'] == 'success') || (e.detail['type'] == 'danger')){
-                toastElement.classList.add('text-white');
-            }
-            toastBody.innerText = e.detail['text'];
-            toast.show();
-        });
-        document.addEventListener("htmx:confirm",e => {
-            const swalPUCP = Swal.mixin({
-                customClass: {
-                    confirmButton: "btn btn-success",
-                    cancelButton: "btn btn-danger"
-                }
-            });
-            // The event is triggered on every trigger for a request, so we need to check if the element
-            // that triggered the request has a confirm question set via the hx-confirm attribute,
-            // if not we can return early and let the default behavior happen
-            if (!e.detail.question) return
-
-            // This will prevent the request from being issued to later manually issue it
-            e.preventDefault()
-
-            swalPUCP.fire({
-                title: "Continuar?",
-                text: e.detail.question,
-                showCancelButton: true,
-                confirmButtonText: "Aceptar",
-                cancelButtonText: "Cancelar"
-            }).then(result => {
-                if (result.isConfirmed) {
-                    // If the user confirms, we manually issue the request
-                    e.detail.issueRequest(true); // true to skip the built-in window.confirm()
-                }
-            })
-        });
-    </script>
     {% block scripts %}
     {% endblock %}
 </body>
