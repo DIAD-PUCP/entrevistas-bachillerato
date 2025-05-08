@@ -10,12 +10,12 @@ from fastapi import (
     FastAPI,
     File,
     Form,
-    HTTPException,
     Query,
     Request,
     Security,
     UploadFile
 )
+from starlette.exceptions import HTTPException
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
