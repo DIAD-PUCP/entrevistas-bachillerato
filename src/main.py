@@ -17,7 +17,7 @@ from fastapi import (
     UploadFile
 )
 from fastapi.concurrency import asynccontextmanager
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
@@ -190,12 +190,23 @@ async def auth_exception_handler(request: Request, exc: AuthException) -> HTMLRe
 
 
 @app.exception_handler(HTTPException)
-async def forbidden_exception_handler(request: Request, exc: HTTPException) -> HTMLResponse:
-    res = templates.TemplateResponse(
-        'error.tpl.html',
-        {"request": request, 'msg': exc.detail},
-        status_code=exc.status_code
-    )
+async def http_exception_handler(request: Request, exc: HTTPException):
+    if 'HX-Request' in request.headers:
+        res = JSONResponse(
+            content={'msg': exc.detail},
+            status_code=exc.status_code
+        )
+        msg = show_message(
+            exc.detail,
+            'danger'
+        )
+        res.headers.update(msg)
+    else:
+        res = templates.TemplateResponse(
+            'error.tpl.html',
+            {"request": request, 'msg': exc.detail},
+            status_code=exc.status_code
+        )
     return res
 
 

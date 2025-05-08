@@ -68,6 +68,11 @@ def delete_usuario(db: Session, usuario_id: str) -> None:
     user = db.get(models.Usuario, usuario_id)
     if not user:
         raise HTTPException(status_code=404, detail="No se encontró usuario")
+    if user.fichas:
+        raise HTTPException(
+            status_code=500,
+            detail="No se puede eliminar un calificador que tiene ficha asignadas"
+        )
     db.delete(user)
     db.commit()
 
@@ -123,6 +128,11 @@ def delete_evaluado(db: Session, evaluado_id: str) -> None:
     evalua = db.get(models.Evaluado, evaluado_id)
     if not evalua:
         raise HTTPException(status_code=404, detail="No se encontró evaluado")
+    if evalua.fichas:
+        raise HTTPException(
+            status_code=500,
+            detail="No se puede eliminar un evaluado que tiene ficha asignadas"
+        )
     db.delete(evalua)
     db.commit()
 
