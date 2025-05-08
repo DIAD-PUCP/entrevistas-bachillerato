@@ -71,6 +71,27 @@ def get_session():
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     create_db_and_tables()
+    with Session(engine) as db:
+        if not crud.get_usuario(db, 'admin'):
+            crud.create_usuario(db, models.UsuarioCreate(
+                id='admin',
+                nombres='Administrador',
+                apellido_paterno='',
+                apellido_materno='',
+                email=os.getenv('ADMIN_MAIL', ''),
+                password=os.getenv('ADMIN_PASS', ''),
+                password_confirm=os.getenv('ADMIN_PASS', ''),
+                perfil='Administrador',
+                activo=True
+            ))
+        if not crud.get_decripciones_criterios(db):
+            crud.set_decripciones_criterios(db, models.DescCriterios(
+                id=1,
+                criterio1='Aprendizaje autónomo y madurez académica',
+                criterio2='Investigación',
+                criterio3='Relación con el entorno',
+                criterio4='Compromiso profesional'
+            ))
     yield
 
 
@@ -325,7 +346,7 @@ async def actualizar_usuario(
 @app.delete("/usuario/{user_id}", response_class=HTMLResponse)
 async def eliminar_usuario(
     user_id: str,
-    redirect: Annotated[bool,Query()] = False,
+    redirect: Annotated[bool, Query()] = False,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -494,7 +515,7 @@ async def actualizar_evaluado(
 @app.delete("/evaluado/{evaluado_id}", response_class=HTMLResponse)
 async def eliminar_evaluado(
     evaluado_id: str,
-    redirect: Annotated[bool,Query()] = False,
+    redirect: Annotated[bool, Query()] = False,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
@@ -627,7 +648,7 @@ async def actualizar_ficha(
 @app.delete("/ficha/{ficha_id}", response_class=HTMLResponse)
 async def eliminar_ficha(
     ficha_id: str,
-    redirect: Annotated[bool,Query()] = False,
+    redirect: Annotated[bool, Query()] = False,
     db: Session = Depends(get_session),
     user: models.Usuario = Security(get_current_active_user)
 ):
