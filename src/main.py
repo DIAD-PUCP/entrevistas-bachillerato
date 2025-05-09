@@ -77,8 +77,8 @@ async def lifespan(_: FastAPI):
             crud.create_usuario(db, models.UsuarioCreate(
                 id='admin',
                 nombres='Administrador',
-                apellido_paterno='',
-                apellido_materno='',
+                apellido_paterno=' ',
+                apellido_materno=' ',
                 email=os.getenv('ADMIN_MAIL', ''),
                 password=os.getenv('ADMIN_PASS', ''),
                 password_confirm=os.getenv('ADMIN_PASS', ''),
