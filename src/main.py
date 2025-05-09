@@ -37,7 +37,7 @@ sqlite_file_name = os.getenv('DATABASE_FILE', "database.db")
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
+engine = create_engine(sqlite_url, connect_args=connect_args)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -752,7 +752,7 @@ async def ver_criterios(
     )
 
 
-@app.patch("/criterios/", response_class=HTMLResponse)
+@app.patch("/criterios", response_class=HTMLResponse)
 async def actualizar_criterios(
     request: Request,
     criterios: Annotated[models.DescCriterios, Form()],
