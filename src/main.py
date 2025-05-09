@@ -731,7 +731,7 @@ async def calificar_ficha(
     return resp
 
 
-@app.get("/criterios/", response_class=HTMLResponse)
+@app.get("/criterios", response_class=HTMLResponse)
 async def ver_criterios(
     request: Request,
     db: Session = Depends(get_session),
