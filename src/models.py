@@ -53,7 +53,7 @@ class EvaluadoBase(SQLModel):
     apellido_paterno: Annotated[str, Field(min_length=1)]
     apellido_materno: str
     carrera: Annotated[str, Field(min_length=1)]
-    edad: Annotated[str, Field(gt=0, lt=130)]
+    edad: Annotated[int, Field(gt=0, lt=130)]
     colegio: Annotated[str, Field(min_length=1)]
 
 
