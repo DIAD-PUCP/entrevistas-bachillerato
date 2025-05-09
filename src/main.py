@@ -17,7 +17,7 @@ from fastapi import (
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.concurrency import asynccontextmanager
-from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
@@ -183,7 +183,7 @@ async def auth_exception_handler(request: Request, exc: AuthException):
     res = templates.TemplateResponse(
         'login.tpl.html',
         {"request": request, "target": request.url.path},
-        status_code=exc.status_code,
+        status_code=status.HTTP_303_SEE_OTHER,
         headers={'HX-Push-Url': f'/login?target={request.url.path}'}
     )
     res.headers.update(msg)
@@ -211,10 +211,13 @@ async def http_exception_handler(
 
 @app.exception_handler(RequestValidationError)
 async def validation_handler(
-    request: Request,
     exc: RequestValidationError
 ):
-    print(exc)
+    errors = [(error['loc'][1],error['msg']) for error in exc.errors()]
+    return JSONResponse(
+        content=errors,
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 @app.get('/login', response_class=HTMLResponse)
@@ -224,7 +227,6 @@ async def login(request: Request, target: Optional[str] = None):
 
 @app.post("/login", response_class=HTMLResponse)
 async def login_for_access_token(
-    request: Request,
     login_data: Annotated[models.LoginData, Form()],
     target: Annotated[str, Query()] = '/',
     db: Session = Depends(get_session)
