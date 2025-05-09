@@ -6,15 +6,15 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 
 class LoginData(BaseModel):
-    email: str
-    password: str
+    email: Annotated[str, Field(min_length=1)]
+    password: Annotated[str, Field(min_length=1)]
 
 
 class UsuarioBase(SQLModel):
-    id: Annotated[str, Field(primary_key=True)]
-    nombres: str
-    apellido_paterno: str
-    apellido_materno: str
+    id: Annotated[str, Field(primary_key=True, min_length=1)]
+    nombres: Annotated[str, Field(min_length=1)]
+    apellido_paterno: Annotated[str, Field(min_length=1)]
+    apellido_materno: Annotated[str, Field(min_length=1)]
     email: Annotated[EmailStr, Field(unique=True, index=True)]
     activo: bool = False
     perfil: str = 'Calificador'
@@ -47,14 +47,14 @@ class Usuario(UsuarioBase, table=True):
 
 
 class EvaluadoBase(SQLModel):
-    id: str = Field(primary_key=True)
+    id: Annotated[str, Field(primary_key=True, min_length=1)]
     documento_identidad: Annotated[str, Field(unique=True, index=True)]
-    nombres: str
-    apellido_paterno: str
+    nombres: Annotated[str, Field(min_length=1)]
+    apellido_paterno: Annotated[str, Field(min_length=1)]
     apellido_materno: str
-    carrera: str
-    edad: int
-    colegio: str
+    carrera: Annotated[str, Field(min_length=1)]
+    edad: Annotated[str, Field(gt=0, lt=130)]
+    colegio: Annotated[str, Field(min_length=1)]
 
 
 class Evaluado(EvaluadoBase, table=True):
@@ -69,10 +69,10 @@ class EvaluadoForm(EvaluadoBase):
 
 
 class FichaCalificacionBase(SQLModel):
-    criterio1: Optional[int] = None
-    criterio2: Optional[int] = None
-    criterio3: Optional[int] = None
-    criterio4: Optional[int] = None
+    criterio1: Annotated[Optional[int], Field(gt=0, lt=4)] = None
+    criterio2: Annotated[Optional[int], Field(gt=0, lt=4)] = None
+    criterio3: Annotated[Optional[int], Field(gt=0, lt=4)] = None
+    criterio4: Annotated[Optional[int], Field(gt=0, lt=4)] = None
     comentario: Optional[str] = None
     fecha_calificacion: Optional[datetime] = None
 
@@ -95,7 +95,7 @@ class FichaCalificacion(FichaCalificacionBase, table=True):
 
 class DescCriterios(SQLModel, table=True):
     id: Annotated[int, Field(primary_key=True)]
-    criterio1: str
-    criterio2: str
-    criterio3: str
-    criterio4: str
+    criterio1: Annotated[str, Field(min_length=1)]
+    criterio2: Annotated[str, Field(min_length=1)]
+    criterio3: Annotated[str, Field(min_length=1)]
+    criterio4: Annotated[str, Field(min_length=1)]
