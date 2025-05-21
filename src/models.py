@@ -69,10 +69,10 @@ class EvaluadoForm(EvaluadoBase):
 
 
 class FichaCalificacionBase(SQLModel):
-    criterio1: Annotated[Optional[int], Field(gt=0, lt=4)] = None
-    criterio2: Annotated[Optional[int], Field(gt=0, lt=4)] = None
-    criterio3: Annotated[Optional[int], Field(gt=0, lt=4)] = None
-    criterio4: Annotated[Optional[int], Field(gt=0, lt=4)] = None
+    criterio1: Annotated[Optional[int], Field(gt=0, lt=5)] = None
+    criterio2: Annotated[Optional[int], Field(gt=0, lt=5)] = None
+    criterio3: Annotated[Optional[int], Field(gt=0, lt=5)] = None
+    criterio4: Annotated[Optional[int], Field(gt=0, lt=5)] = None
     comentario: Optional[str] = None
     fecha_calificacion: Optional[datetime] = None
 
