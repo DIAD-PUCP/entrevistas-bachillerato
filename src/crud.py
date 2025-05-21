@@ -216,7 +216,7 @@ def get_reporte_progreso(db: Session):
     stmt = (
         select(
             models.FichaCalificacion.calificador_id,
-            func.IF(
+            func.IIF(
                 models.FichaCalificacion.fecha_calificacion != None,
                 'Calificado',
                 'Sin calificar'
