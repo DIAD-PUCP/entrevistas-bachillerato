@@ -169,8 +169,8 @@ def show_message(text: str, msg_type: str) -> dict[str, str]:
 
 
 app = FastAPI(lifespan=lifespan)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+app.mount("/static", StaticFiles(directory="static", follow_symlink=True), name="static")
+app.mount("/assets", StaticFiles(directory="assets", follow_symlink=True), name="assets")
 templates = Jinja2Templates(directory="templates")
 
 
