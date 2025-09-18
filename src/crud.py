@@ -11,39 +11,35 @@ def get_usuario(db: Session, usuario_id: str) -> Optional[models.Usuario]:
 
 
 def get_all_usuarios(db: Session) -> list[models.Usuario]:
-    return list(db.exec(
-        select(models.Usuario)
-    ).all())
+    return list(db.exec(select(models.Usuario)).all())
 
 
 def get_usuarios_activos(db: Session) -> list[models.Usuario]:
-    return list(db.exec(
-        select(models.Usuario)
-        .where(models.Usuario.activo == True)
-    ).all())
+    return list(
+        db.exec(select(models.Usuario).where(models.Usuario.activo == True)).all()
+    )
 
 
 def get_usuario_by_email(db: Session, email: str) -> Optional[models.Usuario]:
-    return db.exec(
-        select(models.Usuario)
-        .where(models.Usuario.email == email)
-    ).first()
+    return db.exec(select(models.Usuario).where(models.Usuario.email == email)).first()
 
 
 def create_usuario(db: Session, usuario: models.UsuarioCreate) -> models.Usuario:
     user_data = usuario.model_dump()
-    user_data['hashed_password'] = bcrypt.hash(user_data['password'])
+    user_data["hashed_password"] = bcrypt.hash(user_data["password"])
     user = models.Usuario.model_validate(user_data)
     db.add(user)
     db.commit()
     return user
 
 
-def create_usuarios(db: Session, usuarios: list[models.UsuarioCreate]) -> list[models.Usuario]:
+def create_usuarios(
+    db: Session, usuarios: list[models.UsuarioCreate]
+) -> list[models.Usuario]:
     users = []
     for usuario in usuarios:
         user_data = usuario.model_dump()
-        user_data['hashed_password'] = bcrypt.hash(user_data['password'])
+        user_data["hashed_password"] = bcrypt.hash(user_data["password"])
         user = models.Usuario.model_validate(user_data)
         db.add(user)
         users.append(user)
@@ -51,13 +47,15 @@ def create_usuarios(db: Session, usuarios: list[models.UsuarioCreate]) -> list[m
     return users
 
 
-def update_usuario(db: Session, usuario_id: str, usuario: models.UsuarioUpdate) -> models.Usuario:
+def update_usuario(
+    db: Session, usuario_id: str, usuario: models.UsuarioUpdate
+) -> models.Usuario:
     user = db.get(models.Usuario, usuario_id)
     if not user:
         raise HTTPException(status_code=404, detail="No se encontró usuario")
     user_data = usuario.model_dump(exclude_unset=True)
-    if usuario.password != '':
-        user_data['hashed_password'] = bcrypt.hash(user_data['password'])
+    if usuario.password != "":
+        user_data["hashed_password"] = bcrypt.hash(user_data["password"])
     user.sqlmodel_update(user_data)
     db.add(user)
     db.commit()
@@ -71,7 +69,7 @@ def delete_usuario(db: Session, usuario_id: str) -> None:
     if user.fichas:
         raise HTTPException(
             status_code=500,
-            detail="No se puede eliminar un calificador que tiene ficha asignadas"
+            detail="No se puede eliminar un calificador que tiene ficha asignadas",
         )
     db.delete(user)
     db.commit()
@@ -82,15 +80,12 @@ def get_evaluado(db: Session, evaluado_id: str) -> Optional[models.Evaluado]:
 
 
 def get_evaluados(db: Session) -> list[models.Evaluado]:
-    return list(db.exec(
-        select(models.Evaluado)
-    ).all())
+    return list(db.exec(select(models.Evaluado)).all())
 
 
 def get_evaluado_by_doc(db: Session, doc: str) -> Optional[models.Evaluado]:
     return db.exec(
-        select(models.Evaluado)
-        .where(models.Evaluado.documento_identidad == doc)
+        select(models.Evaluado).where(models.Evaluado.documento_identidad == doc)
     ).first()
 
 
@@ -102,7 +97,9 @@ def create_evaluado(db: Session, evaluado: models.EvaluadoForm) -> models.Evalua
     return evalua
 
 
-def create_evaluados(db: Session, evaluados: list[models.EvaluadoForm]) -> list[models.Evaluado]:
+def create_evaluados(
+    db: Session, evaluados: list[models.EvaluadoForm]
+) -> list[models.Evaluado]:
     evs = []
     for evaluado in evaluados:
         evaluado_data = evaluado.model_dump()
@@ -113,7 +110,9 @@ def create_evaluados(db: Session, evaluados: list[models.EvaluadoForm]) -> list[
     return evs
 
 
-def update_evaluado(db: Session, evaluado_id: str, evaluado: models.EvaluadoForm) -> models.Evaluado:
+def update_evaluado(
+    db: Session, evaluado_id: str, evaluado: models.EvaluadoForm
+) -> models.Evaluado:
     evalua = db.get(models.Evaluado, evaluado_id)
     if not evalua:
         raise HTTPException(status_code=404, detail="No se encontró evaluado")
@@ -131,7 +130,7 @@ def delete_evaluado(db: Session, evaluado_id: str) -> None:
     if evalua.fichas:
         raise HTTPException(
             status_code=500,
-            detail="No se puede eliminar un evaluado que tiene ficha asignadas"
+            detail="No se puede eliminar un evaluado que tiene ficha asignadas",
         )
     db.delete(evalua)
     db.commit()
@@ -142,12 +141,18 @@ def get_ficha(db: Session, ficha_id: str) -> Optional[models.FichaCalificacion]:
 
 
 def get_all_fichas(db: Session) -> list[models.FichaCalificacion]:
-    return list(db.exec(
-        select(models.FichaCalificacion)
-    ).all())
+    return list(
+        db.exec(
+            select(models.FichaCalificacion).order_by(
+                models.FichaCalificacion.fecha_entrevista.asc()
+            )
+        ).all()
+    )
 
 
-def create_ficha(db: Session, ficha: models.FichaCalificacion) -> models.FichaCalificacion:
+def create_ficha(
+    db: Session, ficha: models.FichaCalificacion
+) -> models.FichaCalificacion:
     ficha_data = ficha.model_dump()
     f = models.FichaCalificacion.model_validate(ficha_data)
     db.add(f)
@@ -155,7 +160,9 @@ def create_ficha(db: Session, ficha: models.FichaCalificacion) -> models.FichaCa
     return f
 
 
-def create_fichas(db: Session, fichas: list[models.FichaCalificacion]) -> list[models.FichaCalificacion]:
+def create_fichas(
+    db: Session, fichas: list[models.FichaCalificacion]
+) -> list[models.FichaCalificacion]:
     fs = []
     for ficha in fichas:
         ficha_data = ficha.model_dump()
@@ -166,7 +173,9 @@ def create_fichas(db: Session, fichas: list[models.FichaCalificacion]) -> list[m
     return fs
 
 
-def update_ficha(db: Session, ficha_id: str, ficha: models.FichaCalificacion) -> models.FichaCalificacion:
+def update_ficha(
+    db: Session, ficha_id: str, ficha: models.FichaCalificacion
+) -> models.FichaCalificacion:
     f = db.get(models.FichaCalificacion, ficha_id)
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
@@ -185,12 +194,14 @@ def delete_ficha(db: Session, ficha_id: str) -> None:
     db.commit()
 
 
-def calificar_ficha(db: Session, ficha_id: str, ficha: models.FichaCalificacionBase) -> models.FichaCalificacion:
+def calificar_ficha(
+    db: Session, ficha_id: str, ficha: models.FichaCalificacionBase
+) -> models.FichaCalificacion:
     f = db.get(models.FichaCalificacion, ficha_id)
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
     ficha_data = ficha.model_dump(exclude_unset=True)
-    ficha_data['fecha_calificacion'] = datetime.now()
+    ficha_data["fecha_calificacion"] = datetime.now()
     f.sqlmodel_update(ficha_data)
     db.add(f)
     db.commit()
@@ -201,7 +212,9 @@ def get_decripciones_criterios(db: Session) -> Optional[models.DescCriterios]:
     return db.get(models.DescCriterios, 1)
 
 
-def set_decripciones_criterios(db: Session, criterios: models.DescCriterios) -> models.DescCriterios:
+def set_decripciones_criterios(
+    db: Session, criterios: models.DescCriterios
+) -> models.DescCriterios:
     crit = db.get(models.DescCriterios, 1)
     if not crit:
         crit = criterios
@@ -218,65 +231,60 @@ def get_reporte_progreso(db: Session):
             models.FichaCalificacion.calificador_id,
             func.IIF(
                 models.FichaCalificacion.fecha_calificacion != None,
-                'Calificado',
-                'Sin calificar'
-            ).label('estado'),
-            func.count(models.FichaCalificacion.id).label('cantidad') # type: ignore
-        )
-        .group_by(
-            models.FichaCalificacion.calificador_id,
-            column('estado')
-        )
+                "Calificado",
+                "Sin calificar",
+            ).label("estado"),
+            func.count(models.FichaCalificacion.id).label("cantidad"),  # type: ignore
+        ).group_by(models.FichaCalificacion.calificador_id, column("estado"))
     ).subquery()
-    stmt2 = (
-        select(
-            (models.Usuario.apellido_paterno + ' ' +
-             models.Usuario.apellido_materno + ', ' +
-             models.Usuario.nombres).label('Calificador'), # type: ignore
-            stmt.c.estado,
-            stmt.c.cantidad
-        )
-        .join(stmt)
-    )
+    stmt2 = select(
+        (
+            models.Usuario.apellido_paterno
+            + " "
+            + models.Usuario.apellido_materno
+            + ", "
+            + models.Usuario.nombres
+        ).label("Calificador"),  # type: ignore
+        stmt.c.estado,
+        stmt.c.cantidad,
+    ).join(stmt)
     res = db.exec(stmt2).all()
     result = dict()
     for calificador, estado, cantidad in res:
-        result.setdefault(
-            calificador, {'Calificado': 0, 'Sin calificar': 0}
-        ).update({estado: cantidad})
+        result.setdefault(calificador, {"Calificado": 0, "Sin calificar": 0}).update(
+            {estado: cantidad}
+        )
 
     return result
 
+
 def get_reporte_resultados(db: Session, downloads: bool = False):
-    stmt = (
-        select(
-            models.FichaCalificacion
-        )
-        .where(models.FichaCalificacion.fecha_calificacion != None)
+    stmt = select(models.FichaCalificacion).where(
+        models.FichaCalificacion.fecha_calificacion != None
     )
     if downloads:
         return (
-            select(
-                models.FichaCalificacion,
-                models.Usuario,
-                models.Evaluado
-            )
+            select(models.FichaCalificacion, models.Usuario, models.Evaluado)
             .join(models.Evaluado)
             .join(models.Usuario)
             .with_only_columns(
-                (models.FichaCalificacion.id).label('Ficha'), # type: ignore
-                (models.FichaCalificacion.evaluado_id).label('Evaluado'), # type: ignore
-                models.Evaluado.carrera, # type: ignore
-                (models.Usuario.apellido_paterno + ' ' +
-                models.Usuario.apellido_materno + ', ' +
-                models.Usuario.nombres).label('Calificador'), # type: ignore
-                models.FichaCalificacion.criterio1, # type: ignore
-                models.FichaCalificacion.criterio2, # type: ignore
-                models.FichaCalificacion.criterio3, # type: ignore
-                models.FichaCalificacion.criterio4, # type: ignore
-                models.FichaCalificacion.comentario, # type: ignore
-                models.FichaCalificacion.fecha_calificacion # type: ignore
-            ) # type: ignore
+                (models.FichaCalificacion.id).label("Ficha"),  # type: ignore
+                (models.FichaCalificacion.evaluado_id).label("Evaluado"),  # type: ignore
+                models.Evaluado.carrera,  # type: ignore
+                (
+                    models.Usuario.apellido_paterno
+                    + " "
+                    + models.Usuario.apellido_materno
+                    + ", "
+                    + models.Usuario.nombres
+                ).label("Calificador"),  # type: ignore
+                models.FichaCalificacion.criterio1,  # type: ignore
+                models.FichaCalificacion.criterio2,  # type: ignore
+                models.FichaCalificacion.criterio3,  # type: ignore
+                models.FichaCalificacion.criterio4,  # type: ignore
+                models.FichaCalificacion.comentario,  # type: ignore
+                models.FichaCalificacion.fecha_calificacion,  # type: ignore
+            )  # type: ignore
         )
     else:
         return db.exec(stmt).all()

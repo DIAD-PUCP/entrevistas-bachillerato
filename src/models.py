@@ -17,7 +17,7 @@ class UsuarioBase(SQLModel):
     apellido_materno: Annotated[str, Field(min_length=1)]
     email: Annotated[EmailStr, Field(unique=True, index=True)]
     activo: bool = False
-    perfil: str = 'Calificador'
+    perfil: str = "Calificador"
 
 
 class UsuarioCreate(UsuarioBase):
@@ -39,10 +39,8 @@ class UsuarioUpdate(UsuarioBase):
 class Usuario(UsuarioBase, table=True):
     hashed_password: str
     fichas: list["FichaCalificacion"] = Relationship(
-        back_populates='calificador',
-        sa_relationship_kwargs={
-            'order_by': 'FichaCalificacion.fecha_entrevista'
-        }
+        back_populates="calificador",
+        sa_relationship_kwargs={"order_by": "FichaCalificacion.fecha_entrevista"},
     )
 
 
@@ -59,8 +57,7 @@ class EvaluadoBase(SQLModel):
 
 class Evaluado(EvaluadoBase, table=True):
     ensayo: str
-    fichas: list["FichaCalificacion"] = Relationship(
-        back_populates='evaluado')
+    fichas: list["FichaCalificacion"] = Relationship(back_populates="evaluado")
 
 
 class EvaluadoForm(EvaluadoBase):
@@ -76,10 +73,10 @@ class FichaCalificacionBase(SQLModel):
     comentario: Optional[str] = None
     fecha_calificacion: Optional[datetime] = None
 
-    @field_validator('fecha_calificacion', mode='before')
+    @field_validator("fecha_calificacion", mode="before")
     @classmethod
     def validar_fecha(cls, value: Any) -> Any:
-        if isinstance(value, str) and (value == ''):
+        if isinstance(value, str) and (value == ""):
             return None
         return value
 
@@ -88,8 +85,8 @@ class FichaCalificacion(FichaCalificacionBase, table=True):
     id: Annotated[str, Field(primary_key=True)]
     calificador_id: Annotated[str, Field(foreign_key="usuario.id")]
     evaluado_id: Annotated[str, Field(foreign_key="evaluado.id")]
-    calificador: Usuario = Relationship(back_populates='fichas')
-    evaluado: Evaluado = Relationship(back_populates='fichas')
+    calificador: Usuario = Relationship(back_populates="fichas")
+    evaluado: Evaluado = Relationship(back_populates="fichas")
     fecha_entrevista: datetime
 
 
