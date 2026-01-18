@@ -1,9 +1,13 @@
-from datetime import datetime, timedelta, timezone
-from io import BytesIO
-from typing import Annotated, Optional
 import json
 import os
 import os.path
+from datetime import datetime, timedelta, timezone
+from io import BytesIO
+from typing import Annotated, Optional
+
+import jwt
+import pandas as pd
+from dotenv import load_dotenv
 from fastapi import (
     Cookie,
     Depends,
@@ -15,8 +19,8 @@ from fastapi import (
     Security,
     UploadFile,
 )
-from fastapi.exceptions import RequestValidationError
 from fastapi.concurrency import asynccontextmanager
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import (
     HTMLResponse,
     JSONResponse,
@@ -25,16 +29,13 @@ from fastapi.responses import (
 )
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import jwt
-import pandas as pd
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from sqlmodel import SQLModel, Session, create_engine
+from sqlmodel import Session, SQLModel, create_engine
 from starlette import status
 from starlette.exceptions import HTTPException
-from dotenv import load_dotenv
-from . import models
-from . import crud
+
+from src import crud, models
 
 load_dotenv()
 
@@ -237,9 +238,7 @@ async def login_for_access_token(
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, detail="Usuario o contraseña incorrectos"
         )
-    access_token_expires = timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES  # type: ignore
-    )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
@@ -795,9 +794,9 @@ async def get_resultados(
         )
     fichas = crud.get_reporte_resultados(db, download)
     if download:
-        df = pd.read_sql(fichas, db.bind)  # type: ignore
+        df = pd.read_sql(fichas, db.bind)
         buffer = BytesIO()
-        with pd.ExcelWriter(buffer) as writer:
+        with pd.ExcelWriter(buffer) as writer:  # type: ignore
             df.to_excel(writer, index=False)
         return StreamingResponse(
             BytesIO(buffer.getvalue()),

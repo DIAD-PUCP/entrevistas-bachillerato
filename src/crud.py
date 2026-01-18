@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Optional
+
 from fastapi import HTTPException
 from passlib.hash import bcrypt
-from sqlmodel import Session, func, select, column
-from . import models
+from sqlmodel import Session, column, func, select
+
+from src import models
 
 
 def get_usuario(db: Session, usuario_id: str) -> Optional[models.Usuario]:
@@ -234,7 +236,7 @@ def get_reporte_progreso(db: Session):
                 "Calificado",
                 "Sin calificar",
             ).label("estado"),
-            func.count(models.FichaCalificacion.id).label("cantidad"),  # type: ignore
+            func.count(models.FichaCalificacion.id).label("cantidad"),
         ).group_by(models.FichaCalificacion.calificador_id, column("estado"))
     ).subquery()
     stmt2 = select(
@@ -284,7 +286,7 @@ def get_reporte_resultados(db: Session, downloads: bool = False):
                 models.FichaCalificacion.criterio4,  # type: ignore
                 models.FichaCalificacion.comentario,  # type: ignore
                 models.FichaCalificacion.fecha_calificacion,  # type: ignore
-            )  # type: ignore
+            )
         )
     else:
         return db.exec(stmt).all()

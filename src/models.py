@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Annotated, Any, Optional
+
 from fastapi import UploadFile
-from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel, EmailStr, field_validator
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class LoginData(BaseModel):
@@ -26,12 +27,12 @@ class UsuarioCreate(UsuarioBase):
 
 
 class UsuarioUpdate(UsuarioBase):
-    nombres: Optional[str] = None  # type: ignore
-    apellido_paterno: Optional[str] = None  # type: ignore
-    apellido_materno: Optional[str] = None  # type: ignore
-    email: Optional[EmailStr] = None  # type: ignore
+    nombres: Optional[str] = None
+    apellido_paterno: Optional[str] = None
+    apellido_materno: Optional[str] = None
+    email: Optional[EmailStr] = None
     activo: bool = False
-    perfil: Optional[str] = None  # type: ignore
+    perfil: Optional[str] = None
     password: Optional[str] = None
     password_confirm: Optional[str] = None
 
