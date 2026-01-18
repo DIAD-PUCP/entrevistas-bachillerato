@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import HTTPException
-from passlib.hash import bcrypt
+from pwdlib import PasswordHash
 from sqlmodel import Session, column, func, select
 
 from src import models
@@ -28,7 +28,9 @@ def get_usuario_by_email(db: Session, email: str) -> Optional[models.Usuario]:
 
 def create_usuario(db: Session, usuario: models.UsuarioCreate) -> models.Usuario:
     user_data = usuario.model_dump()
-    user_data["hashed_password"] = bcrypt.hash(user_data["password"])
+    user_data["hashed_password"] = PasswordHash.recommended().hash(
+        user_data["password"]
+    )
     user = models.Usuario.model_validate(user_data)
     db.add(user)
     db.commit()
@@ -39,9 +41,10 @@ def create_usuarios(
     db: Session, usuarios: list[models.UsuarioCreate]
 ) -> list[models.Usuario]:
     users = []
+    password_hash = PasswordHash.recommended()
     for usuario in usuarios:
         user_data = usuario.model_dump()
-        user_data["hashed_password"] = bcrypt.hash(user_data["password"])
+        user_data["hashed_password"] = password_hash.hash(user_data["password"])
         user = models.Usuario.model_validate(user_data)
         db.add(user)
         users.append(user)
@@ -57,7 +60,9 @@ def update_usuario(
         raise HTTPException(status_code=404, detail="No se encontró usuario")
     user_data = usuario.model_dump(exclude_unset=True)
     if usuario.password != "":
-        user_data["hashed_password"] = bcrypt.hash(user_data["password"])
+        user_data["hashed_password"] = PasswordHash.recommended().hash(
+            user_data["password"]
+        )
     user.sqlmodel_update(user_data)
     db.add(user)
     db.commit()

@@ -29,7 +29,7 @@ from fastapi.responses import (
 )
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 from pydantic import BaseModel
 from sqlmodel import Session, SQLModel, create_engine
 from starlette import status
@@ -45,7 +45,7 @@ sqlite_url = f"sqlite:///{sqlite_file_name}"
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, connect_args=connect_args)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+password_hash = PasswordHash.recommended()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
@@ -152,11 +152,11 @@ async def get_current_active_user(
 
 
 def verify_password(plain_password, hashed_password) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return password_hash.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password) -> str:
-    return pwd_context.hash(password)
+    return password_hash.hash(password)
 
 
 def authenticate_user(db: Session, email: str, password: str):
