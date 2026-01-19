@@ -18,7 +18,7 @@ def get_all_usuarios(db: Session) -> list[models.Usuario]:
 
 def get_usuarios_activos(db: Session) -> list[models.Usuario]:
     return list(
-        db.exec(select(models.Usuario).where(models.Usuario.activo == True)).all()
+        db.exec(select(models.Usuario).where(models.Usuario.activo == True)).all()  # noqa
     )
 
 
@@ -151,7 +151,7 @@ def get_all_fichas(db: Session) -> list[models.FichaCalificacion]:
     return list(
         db.exec(
             select(models.FichaCalificacion).order_by(
-                models.FichaCalificacion.fecha_entrevista.asc()
+                models.FichaCalificacion.fecha_entrevista.asc()  # type: ignore
             )
         ).all()
     )
@@ -237,7 +237,7 @@ def get_reporte_progreso(db: Session):
         select(
             models.FichaCalificacion.calificador_id,
             func.IIF(
-                models.FichaCalificacion.fecha_calificacion != None,
+                models.FichaCalificacion.fecha_calificacion != None,  # noqa
                 "Calificado",
                 "Sin calificar",
             ).label("estado"),
@@ -267,7 +267,7 @@ def get_reporte_progreso(db: Session):
 
 def get_reporte_resultados(db: Session, downloads: bool = False):
     stmt = select(models.FichaCalificacion).where(
-        models.FichaCalificacion.fecha_calificacion != None
+        models.FichaCalificacion.fecha_calificacion != None  # noqa
     )
     if downloads:
         return (
