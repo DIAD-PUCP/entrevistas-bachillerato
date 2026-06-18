@@ -5,7 +5,7 @@ description = "Sistema para calificación de entrevistas de bachillerato"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi[standart]>=0.136.3",
+    "fastapi[standard]>=0.137.2",
     "openpyxl>=3.1.5",
     "pandas>=3.0.3",
     "pwdlib[argon2,bcrypt]>=0.3.0",
