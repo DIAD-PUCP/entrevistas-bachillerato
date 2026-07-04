@@ -493,10 +493,6 @@ async def nuevo_evaluado(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción",
         )
-    if evaluado.archivo:
-        ruta = await save_file(evaluado.archivo)
-        if ruta:
-            evaluado.ensayo = ruta
     evalua = crud.create_evaluado(db, evaluado)
     return templates.TemplateResponse(
         "evaluado.tpl.html",

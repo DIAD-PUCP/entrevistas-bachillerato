@@ -41,33 +41,6 @@
             <input id="apellido_materno" class="form-control" type="text" name="apellido_materno" value="{% if evaluado %}{{evaluado.apellido_materno}}{% endif %}" required>
         </div>
     </div>
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="carrera" class="form-label">Carrera:</label>
-            <input id="carrera" class="form-control" type="text" name="carrera" value="{% if evaluado %}{{evaluado.carrera}}{% endif %}" required>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="edad" class="form-label">Edad:</label>
-            <input id="edad" class="form-control" type="number" name="edad" value="{% if evaluado %}{{evaluado.edad}}{% endif %}" required>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="colegio" class="form-label">Colegio:</label>
-            <input id="colegio" class="form-control" type="text" name="colegio" value="{% if evaluado %}{{evaluado.colegio}}{% endif %}" required>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="archivo" class="form-label">Ensayo:</label>
-            {% if evaluado %}
-            <p><a href="{{evaluado.ensayo}}" target="_blank">Ver ensayo</a></p>
-            {% endif %}
-            <input id="archivo" class="form-control" type="file" name="archivo" accept="application/pdf" {% if not evaluado %}required{% endif %}>
-        </div>
-    </div>
     <div class="container d-flex justify-content-center">
         {% if not evaluado %}
         <button id="crear" class="my-4 btn btn-primary" form="evaluado">Crear</button>

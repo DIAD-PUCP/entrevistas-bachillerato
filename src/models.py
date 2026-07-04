@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Annotated, Any, Optional
 
-from fastapi import UploadFile
 from pydantic import BaseModel, EmailStr, field_validator
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -51,19 +50,14 @@ class EvaluadoBase(SQLModel):
     nombres: Annotated[str, Field(min_length=1)]
     apellido_paterno: Annotated[str, Field(min_length=1)]
     apellido_materno: str
-    carrera: Annotated[str, Field(min_length=1)]
-    edad: Annotated[int, Field(gt=0, lt=130)]
-    colegio: Annotated[str, Field(min_length=1)]
 
 
 class Evaluado(EvaluadoBase, table=True):
-    ensayo: str
     fichas: list["FichaCalificacion"] = Relationship(back_populates="evaluado")
 
 
 class EvaluadoForm(EvaluadoBase):
-    ensayo: Optional[str] = None
-    archivo: Optional[UploadFile] = None
+    pass
 
 
 class FichaCalificacionBase(SQLModel):

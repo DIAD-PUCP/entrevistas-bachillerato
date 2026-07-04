@@ -10,9 +10,6 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Carrera</th>
-                <th>Edad</th>
-                <th>Colegio</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -21,9 +18,6 @@
             <tr class="align-middle">
                 <td>{{evaluado.id}}</td>
                 <td>{{evaluado.apellido_paterno}} {{evaluado.apellido_materno}}, {{evaluado.nombres}}</td>
-                <td>{{evaluado.carrera}}</td>
-                <td>{{evaluado.edad}}</td>
-                <td>{{evaluado.colegio}}</td>
                 <td>
                     <a class="btn btn-sm btn-primary" href="/evaluado/{{evaluado.id}}">Editar</a>
                     <a class="btn btn-sm btn-danger" hx-delete="/evaluado/{{evaluado.id}}" hx-confirm="Seguro que desea eliminar este registro?, esta acción no se puede deshacer" hx-target="closest tr">Eliminar</a>
