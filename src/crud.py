@@ -241,7 +241,7 @@ def get_reporte_progreso(db: Session):
                 "Calificado",
                 "Sin calificar",
             ).label("estado"),
-            func.count(models.FichaCalificacion.id).label("cantidad"),
+            func.count(models.FichaCalificacion.id).label("cantidad"),  # type: ignore
         ).group_by(models.FichaCalificacion.calificador_id, column("estado"))
     ).subquery()
     stmt2 = select(
@@ -277,7 +277,6 @@ def get_reporte_resultados(db: Session, downloads: bool = False):
             .with_only_columns(
                 (models.FichaCalificacion.id).label("Ficha"),  # type: ignore
                 (models.FichaCalificacion.evaluado_id).label("Evaluado"),  # type: ignore
-                models.Evaluado.carrera,  # type: ignore
                 (
                     models.Usuario.apellido_paterno
                     + " "
@@ -285,11 +284,28 @@ def get_reporte_resultados(db: Session, downloads: bool = False):
                     + ", "
                     + models.Usuario.nombres
                 ).label("Calificador"),  # type: ignore
-                models.FichaCalificacion.criterio1,  # type: ignore
-                models.FichaCalificacion.criterio2,  # type: ignore
-                models.FichaCalificacion.criterio3,  # type: ignore
-                models.FichaCalificacion.criterio4,  # type: ignore
-                models.FichaCalificacion.comentario,  # type: ignore
+                models.FichaCalificacion.criterio1_1,  # type: ignore
+                models.FichaCalificacion.criterio1_2,  # type: ignore
+                models.FichaCalificacion.criterio1_3,  # type: ignore
+                models.FichaCalificacion.comentario1,  # type: ignore
+                models.FichaCalificacion.criterio2_1,  # type: ignore
+                models.FichaCalificacion.comentario2,  # type: ignore
+                models.FichaCalificacion.criterio3_1,  # type: ignore
+                models.FichaCalificacion.criterio3_2,  # type: ignore
+                models.FichaCalificacion.criterio3_3,  # type: ignore
+                models.FichaCalificacion.comentario3,  # type: ignore
+                models.FichaCalificacion.criterio4_1,  # type: ignore
+                models.FichaCalificacion.criterio4_2,  # type: ignore
+                models.FichaCalificacion.criterio4_3,  # type: ignore
+                models.FichaCalificacion.criterio4_4,  # type: ignore
+                models.FichaCalificacion.comentario4,  # type: ignore
+                models.FichaCalificacion.criterio5_1,  # type: ignore
+                models.FichaCalificacion.criterio5_2,  # type: ignore
+                models.FichaCalificacion.comentario5,  # type: ignore
+                models.FichaCalificacion.criterio6_1,  # type: ignore
+                models.FichaCalificacion.criterio6_2,  # type: ignore
+                models.FichaCalificacion.criterio6_3,  # type: ignore
+                models.FichaCalificacion.comentario6,  # type: ignore
                 models.FichaCalificacion.fecha_calificacion,  # type: ignore
             )
         )
