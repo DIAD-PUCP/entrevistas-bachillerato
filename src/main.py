@@ -192,8 +192,9 @@ templates = Jinja2Templates(directory="templates")
 async def auth_exception_handler(request: Request, exc: AuthException):
     msg = show_message(exc.detail, "danger")
     res = templates.TemplateResponse(
-        "login.tpl.html",
-        {"request": request, "target": request.url.path},
+        request=request,
+        name="login.tpl.html",
+        context={"target": request.url.path},
         status_code=status.HTTP_303_SEE_OTHER,
         headers={"HX-Push-Url": f"/login?target={request.url.path}"},
     )
@@ -207,8 +208,9 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         res = PlainTextResponse(content=exc.detail, status_code=exc.status_code)
     else:
         res = templates.TemplateResponse(
-            "error.tpl.html",
-            {"request": request, "msg": exc.detail},
+            request=request,
+            name="error.tpl.html",
+            context={"msg": exc.detail},
             status_code=exc.status_code,
         )
     return res
@@ -225,7 +227,7 @@ async def validation_handler(exc: RequestValidationError):
 @app.get("/login", response_class=HTMLResponse)
 async def login(request: Request, target: Optional[str] = None):
     return templates.TemplateResponse(
-        "login.tpl.html", {"request": request, "target": target}
+        request=request, name="login.tpl.html", context={"target": target}
     )
 
 
@@ -252,8 +254,8 @@ async def login_for_access_token(
 @app.get("/logout", response_class=HTMLResponse)
 async def logout(request: Request):
     response = templates.TemplateResponse(
-        "login.tpl.html",
-        {"request": request},
+        request=request,
+        name="login.tpl.html",
         status_code=status.HTTP_302_FOUND,
         headers=show_message("Se cerró sesión", "success"),
     )
@@ -266,7 +268,7 @@ async def index(
     request: Request, user: models.Usuario = Security(get_current_active_user)
 ):
     return templates.TemplateResponse(
-        "index.tpl.html", {"request": request, "user": user}
+        request=request, name="index.tpl.html", context={"user": user}
     )
 
 
@@ -283,8 +285,9 @@ async def get_usuarios(
         )
     usuarios = crud.get_all_usuarios(db)
     return templates.TemplateResponse(
-        "listado-usuarios.tpl.html",
-        {"request": request, "usuarios": usuarios, "user": user},
+        request=request,
+        name="listado-usuarios.tpl.html",
+        context={"usuarios": usuarios, "user": user},
     )
 
 
@@ -309,7 +312,9 @@ async def get_usuario(
                 status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró usuario"
             )
     return templates.TemplateResponse(
-        "usuario.tpl.html", {"request": request, "usuario": usuario, "user": user}
+        request=request,
+        name="usuario.tpl.html",
+        context={"usuario": usuario, "user": user},
     )
 
 
@@ -327,14 +332,16 @@ async def nuevo_usuario(
         )
     if usuario.password != usuario.password_confirm:
         return templates.TemplateResponse(
-            "usuario.tpl.html",
-            context={"request": request, "user": user},
+            request=request,
+            name="usuario.tpl.html",
+            context={"user": user},
             headers=show_message("Los password no coinciden.", "danger"),
         )
     u = crud.create_usuario(db, usuario)
     return templates.TemplateResponse(
-        "usuario.tpl.html",
-        context={"request": request, "usuario": u, "user": user},
+        request=request,
+        name="usuario.tpl.html",
+        context={"usuario": u, "user": user},
         headers=show_message(f"Se creo el usuario {u.id}", "success")
         | {"HX-Push-Url": f"/usuario/{u.id}"},
     )
@@ -355,14 +362,16 @@ async def actualizar_usuario(
         )
     if usuario.password != usuario.password_confirm:
         return templates.TemplateResponse(
-            "usuario.tpl.html",
-            context={"request": request, "usuario": usuario, "user": user},
+            request=request,
+            name="usuario.tpl.html",
+            context={"usuario": usuario, "user": user},
             headers=show_message("Los password no coinciden.", "danger"),
         )
     u = crud.update_usuario(db, user_id, usuario)
     return templates.TemplateResponse(
-        "usuario.tpl.html",
-        context={"request": request, "usuario": u, "user": user},
+        request=request,
+        name="usuario.tpl.html",
+        context={"usuario": u, "user": user},
         headers=show_message("Se actualizó el usuario", "success"),
     )
 
@@ -408,8 +417,9 @@ async def listado_por_calificar(
         ficha for ficha in usuario.fichas if ficha.fecha_calificacion is None
     ]
     return templates.TemplateResponse(
-        "listado-a-calificar.tpl.html",
-        context={"request": request, "fichas": fichas_pendientes, "user": user},
+        request=request,
+        name="listado-a-calificar.tpl.html",
+        context={"fichas": fichas_pendientes, "user": user},
     )
 
 
@@ -421,8 +431,9 @@ async def listado_propios_por_calificar(
         ficha for ficha in user.fichas if ficha.fecha_calificacion is None
     ]
     return templates.TemplateResponse(
-        "listado-a-calificar.tpl.html",
-        context={"request": request, "fichas": fichas_pendientes, "user": user},
+        request=request,
+        name="listado-a-calificar.tpl.html",
+        context={"fichas": fichas_pendientes, "user": user},
     )
 
 
@@ -439,8 +450,9 @@ async def get_evaluados(
         )
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
-        "listado-evaluados.tpl.html",
-        {"request": request, "evaluados": evaluados, "user": user},
+        request=request,
+        name="listado-evaluados.tpl.html",
+        context={"evaluados": evaluados, "user": user},
     )
 
 
@@ -465,7 +477,9 @@ async def get_evaluado(
                 status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró evaluado"
             )
     return templates.TemplateResponse(
-        "evaluado.tpl.html", {"request": request, "evaluado": evaluado, "user": user}
+        request=request,
+        name="evaluado.tpl.html",
+        context={"evaluado": evaluado, "user": user},
     )
 
 
@@ -499,8 +513,9 @@ async def nuevo_evaluado(
             evaluado.ensayo = ruta
     evalua = crud.create_evaluado(db, evaluado)
     return templates.TemplateResponse(
-        "evaluado.tpl.html",
-        context={"request": request, "evaluado": evalua, "user": user},
+        request=request,
+        name="evaluado.tpl.html",
+        context={"evaluado": evalua, "user": user},
         headers=show_message(f"Se creo el evaluado {evalua.id}", "success")
         | {"HX-Push-Url": f"/evaluado/{evalua.id}"},
     )
@@ -525,8 +540,9 @@ async def actualizar_evaluado(
             evaluado.ensayo = ruta
     evalua = crud.update_evaluado(db, evaluado_id, evaluado)
     return templates.TemplateResponse(
-        "evaluado.tpl.html",
-        context={"request": request, "evaluado": evalua, "user": user},
+        request=request,
+        name="evaluado.tpl.html",
+        context={"evaluado": evalua, "user": user},
         headers=show_message("Se actualizó el evaluado", "success"),
     )
 
@@ -564,7 +580,9 @@ async def get_fichas(
         )
     fichas = crud.get_all_fichas(db)
     return templates.TemplateResponse(
-        "listado-fichas.tpl.html", {"request": request, "fichas": fichas, "user": user}
+        request=request,
+        name="listado-fichas.tpl.html",
+        context={"fichas": fichas, "user": user},
     )
 
 
@@ -591,9 +609,9 @@ async def get_ficha(
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
-        "ficha.tpl.html",
-        {
-            "request": request,
+        request=request,
+        name="ficha.tpl.html",
+        context={
             "ficha": ficha,
             "usuarios": usuarios,
             "evaluados": evaluados,
@@ -618,9 +636,9 @@ async def nueva_ficha(
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
     resp = templates.TemplateResponse(
-        "ficha.tpl.html",
+        request=request,
+        name="ficha.tpl.html",
         context={
-            "request": request,
             "ficha": f,
             "usuarios": usuarios,
             "evaluados": evaluados,
@@ -650,9 +668,9 @@ async def actualizar_ficha(
     usuarios = crud.get_usuarios_activos(db)
     evaluados = crud.get_evaluados(db)
     resp = templates.TemplateResponse(
-        "ficha.tpl.html",
+        request=request,
+        name="ficha.tpl.html",
         context={
-            "request": request,
             "ficha": f,
             "usuarios": usuarios,
             "evaluados": evaluados,
@@ -702,8 +720,9 @@ async def ver_calificar_ficha(
         )
     desc_crit = crud.get_decripciones_criterios(db)
     return templates.TemplateResponse(
-        "calificar.tpl.html",
-        context={"request": request, "ficha": ficha, "user": user, "crit": desc_crit},
+        request=request,
+        name="calificar.tpl.html",
+        context={"ficha": ficha, "user": user, "crit": desc_crit},
     )
 
 
@@ -740,7 +759,9 @@ async def ver_criterios(
         )
     criterios = crud.get_decripciones_criterios(db)
     return templates.TemplateResponse(
-        "criterios.tpl.html", {"request": request, "criterios": criterios, "user": user}
+        request=request,
+        name="criterios.tpl.html",
+        context={"criterios": criterios, "user": user},
     )
 
 
@@ -758,7 +779,9 @@ async def actualizar_criterios(
         )
     criterios = crud.set_decripciones_criterios(db, criterios)
     resp = templates.TemplateResponse(
-        "criterios.tpl.html", {"request": request, "criterios": criterios, "user": user}
+        request=request,
+        name="criterios.tpl.html",
+        context={"criterios": criterios, "user": user},
     )
     resp.headers.update(show_message("Se actualizaron los criterios", "success"))
     return resp
@@ -777,8 +800,9 @@ async def reporte_estado(
         )
     calificadores = crud.get_reporte_progreso(db)
     return templates.TemplateResponse(
-        "reporte-estado.tpl.html",
-        {"request": request, "calificadores": calificadores, "user": user},
+        request=request,
+        name="reporte-estado.tpl.html",
+        context={"calificadores": calificadores, "user": user},
     )
 
 
@@ -798,7 +822,7 @@ async def get_resultados(
     if download:
         df = pd.read_sql(fichas, db.bind)
         buffer = BytesIO()
-        with pd.ExcelWriter(buffer) as writer:  # type: ignore
+        with pd.ExcelWriter(buffer) as writer:
             df.to_excel(writer, index=False)
         return StreamingResponse(
             BytesIO(buffer.getvalue()),
@@ -807,8 +831,9 @@ async def get_resultados(
         )
     else:
         return templates.TemplateResponse(
-            "reporte-resultados.tpl.html",
-            {"request": request, "fichas": fichas, "user": user},
+            request=request,
+            name="reporte-resultados.tpl.html",
+            context={"fichas": fichas, "user": user},
         )
 
 
@@ -822,7 +847,7 @@ async def cargar_evaluados(
             detail="No cuenta con los suficientes permisos para esta acción",
         )
     return templates.TemplateResponse(
-        "cargar-evaluados.tpl.html", {"request": request, "user": user}
+        request=request, name="cargar-evaluados.tpl.html", context={"user": user}
     )
 
 
@@ -840,14 +865,15 @@ async def importar_evaluados(
         )
     df = pd.read_csv(archivo.file, dtype={"documento_identidad": str})
     evas = [
-        models.EvaluadoForm.model_validate_json(data.to_json())
+        models.EvaluadoForm.model_validate_json(data.to_json())  # type: ignore
         for _, data in df.iterrows()
     ]
-    evas = crud.create_evaluados(db, evas)
+    crud.create_evaluados(db, evas)
     evaluados = crud.get_evaluados(db)
     return templates.TemplateResponse(
-        "listado-evaluados.tpl.html",
-        {"request": request, "evaluados": evaluados, "user": user},
+        request=request,
+        name="listado-evaluados.tpl.html",
+        context={"evaluados": evaluados, "user": user},
         headers={"HX-Push-Url": "/evaluados"},
     )
 
@@ -862,7 +888,7 @@ async def cargar_usuarios(
             detail="No cuenta con los suficientes permisos para esta acción",
         )
     return templates.TemplateResponse(
-        "cargar-usuarios.tpl.html", {"request": request, "user": user}
+        request=request, name="cargar-usuarios.tpl.html", context={"user": user}
     )
 
 
@@ -881,14 +907,15 @@ async def importar_usuarios(
     df = pd.read_csv(archivo.file, dtype={"id": str})
     df["password_confirm"] = df["password"]
     users = [
-        models.UsuarioCreate.model_validate_json(data.to_json())
+        models.UsuarioCreate.model_validate_json(data.to_json())  # type: ignore
         for _, data in df.iterrows()
     ]
-    users = crud.create_usuarios(db, users)
+    crud.create_usuarios(db, users)
     usuarios = crud.get_all_usuarios(db)
     return templates.TemplateResponse(
-        "listado-usuarios.tpl.html",
-        {"request": request, "usuarios": usuarios, "user": user},
+        request=request,
+        name="listado-usuarios.tpl.html",
+        context={"usuarios": usuarios, "user": user},
         headers={"HX-Push-Url": "/usuarios"},
     )
 
@@ -903,7 +930,7 @@ async def cargar_fichas(
             detail="No cuenta con los suficientes permisos para esta acción",
         )
     return templates.TemplateResponse(
-        "cargar-fichas.tpl.html", {"request": request, "user": user}
+        request=request, name="cargar-fichas.tpl.html", context={"user": user}
     )
 
 
@@ -923,13 +950,14 @@ async def importar_fichas(
         archivo.file, dtype={"id": str, "calificador_id": str, "evaluado_id": str}
     )
     fs = [
-        models.FichaCalificacion.model_validate_json(data.to_json())
+        models.FichaCalificacion.model_validate_json(data.to_json())  # type: ignore
         for _, data in df.iterrows()
     ]
-    fs = crud.create_fichas(db, fs)
+    crud.create_fichas(db, fs)
     fichas = crud.get_all_fichas(db)
     return templates.TemplateResponse(
-        "listado-fichas.tpl.html",
-        {"request": request, "fichas": fichas, "user": user},
+        request=request,
+        name="listado-fichas.tpl.html",
+        context={"fichas": fichas, "user": user},
         headers={"HX-Push-Url": "/fichas"},
     )
