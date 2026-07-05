@@ -100,10 +100,28 @@ async def lifespan(_: FastAPI):
                 db,
                 models.DescCriterios(
                     id=1,
-                    criterio1="Aprendizaje autónomo y madurez académica",
-                    criterio2="Investigación",
-                    criterio3="Relación con el entorno",
-                    criterio4="Compromiso profesional",
+                    criterio1=" ",
+                    criterio1_1=" ",
+                    criterio1_2=" ",
+                    criterio1_3=" ",
+                    criterio2=" ",
+                    criterio2_1=" ",
+                    criterio3=" ",
+                    criterio3_1=" ",
+                    criterio3_2=" ",
+                    criterio3_3=" ",
+                    criterio4=" ",
+                    criterio4_1=" ",
+                    criterio4_2=" ",
+                    criterio4_3=" ",
+                    criterio4_4=" ",
+                    criterio5=" ",
+                    criterio5_1=" ",
+                    criterio5_2=" ",
+                    criterio6=" ",
+                    criterio6_1=" ",
+                    criterio6_2=" ",
+                    criterio6_3=" ",
                 ),
             )
     yield
@@ -530,10 +548,6 @@ async def actualizar_evaluado(
             status.HTTP_403_FORBIDDEN,
             detail="No cuenta con los suficientes permisos para esta acción",
         )
-    if evaluado.archivo:
-        ruta = await save_file(evaluado.archivo)
-        if ruta:
-            evaluado.ensayo = ruta
     evalua = crud.update_evaluado(db, evaluado_id, evaluado)
     return templates.TemplateResponse(
         request=request,

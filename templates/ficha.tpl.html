@@ -44,26 +44,32 @@
             <input id="fecha_entrevista" class="form-control" type="datetime-local" name="fecha_entrevista" value="{% if ficha %}{{ficha.fecha_entrevista}}{% endif %}" required>
         </div>
     </div>
-    {% for i in range(1,5) %}
+    {% for i in ["1_1","1_2","1_3","comentario1","2_1","comentario2","3_1","3_2","3_3","comentario3","4_1","4_2","4_3","4_4","comentario4","5_1","5_2","comentario5","6_1","6_2","6_3","comentario6"] %}
+    {% if i.startswith("comentario")%}
+    <div class="row mb-3">
+        <div class="col-6">
+        <textarea id="{{i}}" class="form-control" name="{{i}}" rows="3">{% if ficha[i] %}{{ficha[i]}}{% endif %}</textarea>
+        </div>
+    </div>
+    {% else %}
     {% set c = 'criterio' + (i|string()) %}
     <div class="row mb-3">
-        <div class="col-md-6">
-            <span class="form-label" id="label-{{c}}">{{c}}:&nbsp;&nbsp;&nbsp;&nbsp;</span>
-            {% for j in range(1,5) %}
+        <div class="col-1">
+            <span class="w-100 mb-3 d-inline-block">{{c}}:</span>
+        </div>
+        <div class="col-2">
             <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="{{c}}" value="{{j}}" id="{{c}}-{{j}}" {% if ficha[c] == j %}checked{% endif %}>
-                <label class="form-check-label" for="{{c}}-{{j}}">{{j}}</label>
+                <input type="radio" class="form-check-input" name="{{c}}" value="yes" id="{{c}}-{{yes}}" {% if ficha[c] == True %}checked{% endif %}>
+                <label class="form-check-label" for="{{c}}-{{yes}}">SI</label>
             </div>
-            {% endfor %}
+            <div class="form-check form-check-inline">
+                <input type="radio" class="form-check-input" name="{{c}}" value="no" id="{{c}}-{{no}}" {% if ficha[c] == False %}checked{% endif %}>
+                <label class="form-check-label" for="{{c}}-{{no}}">NO</label>
+            </div>
         </div>
     </div>
+    {% endif %}
     {% endfor %}
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="comentario" class="form-label">Observaciones:</label>
-            <textarea id="comentario" class="form-control" name="comentario" rows="3">{% if ficha and ficha.comentario %}{{ficha.comentario}}{% endif %}</textarea>
-        </div>
-    </div>
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="fecha_calificacion" class="form-label">Fecha de calificacion:</label>
