@@ -212,7 +212,7 @@ async def auth_exception_handler(request: Request, exc: AuthException):
     res = templates.TemplateResponse(
         request=request,
         name="login.tpl.html",
-        context={"request": request, "target": request.url.path},
+        context={"target": request.url.path},
         status_code=status.HTTP_303_SEE_OTHER,
         headers={"HX-Push-Url": f"/login?target={request.url.path}"},
     )
@@ -527,8 +527,8 @@ async def nuevo_evaluado(
         )
     evalua = crud.create_evaluado(db, evaluado)
     return templates.TemplateResponse(
-        name="evaluado.tpl.html",
         request=request,
+        name="evaluado.tpl.html",
         context={"evaluado": evalua, "user": user},
         headers=show_message(f"Se creo el evaluado {evalua.id}", "success")
         | {"HX-Push-Url": f"/evaluado/{evalua.id}"},
