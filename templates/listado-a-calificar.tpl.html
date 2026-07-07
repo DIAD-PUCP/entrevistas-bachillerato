@@ -8,6 +8,8 @@
                 <th>Apellido paterno</th>
                 <th>Apellido materno</th>
                 <th>Nombres</th>
+                <th>Especialidad</th>
+                <th>Proceso</th>
                 <th>Entrevista</th>
             </tr>
         </thead>
@@ -19,6 +21,8 @@
                 <td>{{evaluado.apellido_paterno}}</td>
                 <td>{{evaluado.apellido_materno}}</td>
                 <td>{{evaluado.nombres}}</td>
+                <td>{{evaluado.especialidad}}</td>
+                <td>{{evaluado.proceso_procedencia}}</td>
                 <td><a class="btn btn-sm btn-primary" href="/ficha/{{ficha.id}}/calificar">Entrevista</a></td>
             </tr>
             {% else %}
