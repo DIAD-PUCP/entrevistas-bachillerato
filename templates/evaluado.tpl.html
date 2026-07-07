@@ -41,6 +41,18 @@
             <input id="apellido_materno" class="form-control" type="text" name="apellido_materno" value="{% if evaluado %}{{evaluado.apellido_materno}}{% endif %}" required>
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="especialidad" class="form-label">Especialidad:</label>
+            <input id="especialidad" class="form-control" type="text" name="especialidad" value="{% if evaluado %}{{evaluado.especialidad}}{% endif %}" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="proceso_procedencia" class="form-label">Proceso:</label>
+            <input id="proceso_procedencia" class="form-control" type="text" name="proceso_procedencia" value="{% if evaluado %}{{evaluado.proceso_prcedencia}}{% endif %}" required>
+        </div>
+    </div>
     <div class="container d-flex justify-content-center">
         {% if not evaluado %}
         <button id="crear" class="my-4 btn btn-primary" form="evaluado">Crear</button>
