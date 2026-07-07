@@ -48,23 +48,24 @@
     {% if i.startswith("comentario")%}
     <div class="row mb-3">
         <div class="col-6">
+        <span>Observaciones:</span>
         <textarea id="{{i}}" class="form-control" name="{{i}}" rows="3">{% if ficha[i] %}{{ficha[i]}}{% endif %}</textarea>
         </div>
     </div>
     {% else %}
     {% set c = 'criterio' + (i|string()) %}
-    <div class="row mb-3">
-        <div class="col-1">
+    <div class="d-flex j mb-3">
+        <div>
             <span class="w-100 mb-3 d-inline-block">{{c}}:</span>
         </div>
-        <div class="col-2">
+        <div class="container">
             <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="{{c}}" value="yes" id="{{c}}-{{yes}}" {% if ficha[c] == True %}checked{% endif %}>
-                <label class="form-check-label" for="{{c}}-{{yes}}">SI</label>
+                <input type="radio" class="form-check-input" name="{{c}}" value="yes" id="{{c}}-yes" {% if ficha[c] == True %}checked{% endif %}>
+                <label class="form-check-label" for="{{c}}-yes">SI</label>
             </div>
             <div class="form-check form-check-inline">
-                <input type="radio" class="form-check-input" name="{{c}}" value="no" id="{{c}}-{{no}}" {% if ficha[c] == False %}checked{% endif %}>
-                <label class="form-check-label" for="{{c}}-{{no}}">NO</label>
+                <input type="radio" class="form-check-input" name="{{c}}" value="no" id="{{c}}-no" {% if ficha[c] == False %}checked{% endif %}>
+                <label class="form-check-label" for="{{c}}-no">NO</label>
             </div>
         </div>
     </div>
