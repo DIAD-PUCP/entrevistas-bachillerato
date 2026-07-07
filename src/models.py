@@ -48,6 +48,8 @@ class EvaluadoBase(SQLModel):
     id: Annotated[str, Field(primary_key=True, min_length=1)]
     documento_identidad: Annotated[str, Field(unique=True, index=True)]
     nombres: Annotated[str, Field(min_length=1)]
+    especialidad: Annotated[str, Field()]
+    proceso_procedencia: Annotated[str, Field()]
     apellido_paterno: Annotated[str, Field(min_length=1)]
     apellido_materno: str
 
