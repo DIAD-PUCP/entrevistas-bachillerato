@@ -49,12 +49,12 @@
                 </div>
                 <div class="col-3">
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="{{c}}" value="yes" id="{{c}}-{{yes}}" {% if ficha[c] == True %}checked{% endif %}>
-                        <label class="form-check-label" for="{{c}}-{{yes}}">SI</label>
+                        <input type="radio" class="form-check-input" name="{{c}}" value="yes" id="{{c}}-yes" {% if ficha[c] == True %}checked{% endif %}>
+                        <label class="form-check-label" for="{{c}}-yes">SI</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input" name="{{c}}" value="no" id="{{c}}-{{no}}" {% if (ficha[c] == False) or (ficha[c] == None) %}checked{% endif %}>
-                        <label class="form-check-label" for="{{c}}-{{no}}">NO</label>
+                        <input type="radio" class="form-check-input" name="{{c}}" value="no" id="{{c}}-no" {% if (ficha[c] == False) or (ficha[c] == None) %}checked{% endif %}>
+                        <label class="form-check-label" for="{{c}}-no">NO</label>
                     </div>
                 </div>
             </div>
