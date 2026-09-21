@@ -1,6 +1,27 @@
 {% extends "base.tpl.html" %}
 {% block content %}
 <h2>Cargar evaluados</h2>
+<h3>Archivo CSV</h3>
+<p>El archivo CSV debe tener el siguiente formato:</p>
+<pre><code>
+    id,documento_identidad,apellido_paterno,apellido_materno,nombres,carrera,edad,colegio,ensayo
+    F9999999,11111111,PEREZ,LOPEZ,LUCIA DORIS,PSICOLOGÍA,17,SAN ANTONIO DE PADUA,/static/F9999999.pdf
+    F9999998,22222222,RUIZ,RAMOS,JUAN JOSE,INGENIERÍA MECÁNICA,16,COLEGIO PERUANO JAPONES LA UNION,/static/F9999998.pdf
+    F9999997,33333333,CAMPOS,SAENZ,ALEJANDRA,DERECHO,16,SAN ANTONIO DE PADUA,/static/F9999997.pdf
+</code></pre>
+<p>Todos los campos son obligatorios, revisar que no haya id duplicados, si el id ya existe, la carga fallará</p>
+<p>Descripción de las columnas:</p>
+<ol>
+    <li><code>id</code> : Un identificador único del evaluado, usualmente el código PUCP</li>
+    <li><code>documento_identidad</code> : Número de documento de identidad del evaluado</li>
+    <li><code>apellido_paterno</code> : El apellido paterno del evaluado</li>
+    <li><code>apellido_materno</code> : El apellido materno del evaluado, de no tener usar un guión o un espacio en blanco</li>
+    <li><code>nombres</code> : Los nombres del evaluado</li>
+    <li><code>carrera</code> : La especialidad a la que postula el evaluado</li>
+    <li><code>edad</code> : La edad del evaluado</li>
+    <li><code>colegio</code> : El nombre del colegio de donde proviene el evaluado</li>
+    <li><code>ensayo</code> : La ruta del ensayo, los ensayos se cargan en la carpeta <code>/static/</code> y debe indicarse esta ruta en el archivo, como en el ejemplo</li>
+</ol>
 <form hx-boost="true" id="cargar-evaluados" method="POST" enctype="multipart/form-data" action="/evaluados/importar">
     <div class="row mb-3">
         <div class="col-md-6">

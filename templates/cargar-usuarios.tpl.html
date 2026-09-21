@@ -1,6 +1,24 @@
 {% extends "base.tpl.html" %}
 {% block content %}
 <h2>Cargar usuarios</h2>
+<h3>Archivo CSV</h3>
+<p>El archivo CSV debe tener el siguiente formato:</p>
+<pre><code>
+    id,apellido_paterno,apellido_materno,nombres,email,password,activo
+    20080373,MORENO,VALLES,FERNANDO ANTONIO,fernando.moreno@pucp.edu.pe,Diad2025#,True
+    99999999,INOQUIO,SENADOR,MARCO,minoquio@pucp.edu.pe,8rStDs283,True
+</code></pre>
+<p>Todos los campos son obligatorios, revisar que no haya id duplicados, si el id ya existe, la carga fallará. Todos los usuarios se crean con perfil Calificador</p>
+<p>Descripción de las columnas:</p>
+<ol>
+    <li><code>id</code> : Un identificador único del usuario, usualmente el código PUCP</li>
+    <li><code>apellido_paterno</code> : El apellido paterno del usuario</li>
+    <li><code>apellido_materno</code> : El apellido materno del usuario, de no tener usar un guión o un espacio en blanco</li>
+    <li><code>nombres</code> : Los nombres del usuario</li>
+    <li><code>email</code> : El correo del usuario, no necesariamente tiene qe ser PUCP, este se usará para el login</li>
+    <li><code>password</code> : El password del usuario, usar los indicados en la hoja de cálculo de los entrevistadores</li>
+    <li><code>activo</code> : "True" para crear el usuario activo o "False" para crearlo desactivado</li>
+</ol>
 <form hx-boost="true" id="cargar-usuarios" method="POST" enctype="multipart/form-data" action="/usuarios/importar">
     <div class="row mb-3">
         <div class="col-md-6">

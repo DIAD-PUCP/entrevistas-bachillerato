@@ -1,6 +1,22 @@
 {% extends "base.tpl.html" %}
 {% block content %}
 <h2>Cargar fichas</h2>
+<h3>Archivo CSV</h3>
+<p>El archivo CSV debe tener el siguiente formato:</p>
+<pre><code>
+    id,calificador_id,evaluado_id,fecha_entrevista
+    F9999999-PEREZ LOPEZ,20080373,F9999999,2026-09-11T17:00:00
+    F9999998-RUIZ RAMOS,20080373,F9999998,2026-09-12T15:30:00
+    F9999997-CAMPOS SAENZ,99999999,F9999997,2026-09-11T17:00:00
+</code></pre>
+<p>Todos los campos son obligatorios, revisar que no haya id duplicados, si el id ya existe, la carga fallará</p>
+<p>Descripción de las columnas:</p>
+<ol>
+    <li><code>id</code> : Un identificador único de la ficha, usualmente se pone <code>CODIGO-APELLIDOS</code> como en el ejemplo</li>
+    <li><code>calificador_id</code> : El id del calificador (usualmente su código PUCP)</li>
+    <li><code>evaluado_id</code> : El id del evaluado (usualmente su código de postulante)</li>
+    <li><code>fecha_entrevista</code> : La fecha de la entrevista, debe tener el siguiente formato: <code>yyyy-mm-ddThh:mm:ss</code></li>
+</ol>
 <form hx-boost="true" id="cargar-fichas" method="POST" enctype="multipart/form-data" action="/fichas/importar">
     <div class="row mb-3">
         <div class="col-md-6">
