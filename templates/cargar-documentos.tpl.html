@@ -1,0 +1,18 @@
+
+{% extends "base.tpl.html" %}
+{% block content %}
+<h2>Cargar documentos</h2>
+<h3>Archivos</h3>
+<p>Los archivos serán cargados en la carpeta <code>/static/</code>, los archivos con el mismo nombre se sobreescribirán.</p>
+<form hx-boost="true" id="cargar-documentos" method="POST" enctype="multipart/form-data" action="/cargar-documentos">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="archivos" class="form-label">Archivos:</label>
+            <input id="archivos" class="form-control" type="file" name="archivos" multiple required>
+        </div>
+    </div>
+    <div class="container d-flex justify-content-center">
+        <button id="cargar" class="my-4 btn btn-primary" form="cargar-documentos">Cargar documentos</button>
+    </div>
+</form>
+{% endblock %}

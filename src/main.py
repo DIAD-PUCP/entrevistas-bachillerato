@@ -1,9 +1,9 @@
 import json
 import os
 import os.path
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from io import BytesIO
-from typing import Annotated, Optional
+from typing import Annotated
 
 import jwt
 import pandas as pd
@@ -112,16 +112,16 @@ async def lifespan(_: FastAPI):
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(UTC) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 async def get_current_user(
-    token: Annotated[Optional[str], Cookie()] = None, db: Session = Depends(get_session)
+    token: Annotated[str | None, Cookie()] = None, db: Session = Depends(get_session)
 ) -> models.Usuario:
     credentials_exception = AuthException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -225,7 +225,7 @@ async def validation_handler(exc: RequestValidationError):
 
 
 @app.get("/login", response_class=HTMLResponse)
-async def login(request: Request, target: Optional[str] = None):
+async def login(request: Request, target: str | None = None):
     return templates.TemplateResponse(
         request=request, name="login.tpl.html", context={"target": target}
     )
@@ -960,4 +960,53 @@ async def importar_fichas(
         name="listado-fichas.tpl.html",
         context={"fichas": fichas, "user": user},
         headers={"HX-Push-Url": "/fichas"},
+    )
+
+
+@app.get("/cargar-documentos", response_class=HTMLResponse)
+async def form_cargar_documentos(
+    request: Request, user: models.Usuario = Security(get_current_active_user)
+):
+    if user.perfil != "Administrador":
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción",
+        )
+    return templates.TemplateResponse(
+        request=request, name="cargar-documentos.tpl.html", context={"user": user}
+    )
+
+
+@app.post("/cargar-documentos", response_class=HTMLResponse)
+async def cargar_documentos(
+    request: Request,
+    archivos: Annotated[list[UploadFile], File(...)],
+    db: Session = Depends(get_session),
+    user: models.Usuario = Security(get_current_active_user),
+):
+    if user.perfil != "Administrador":
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No cuenta con los suficientes permisos para esta acción",
+        )
+    errors = []
+    for archivo in archivos:
+        path = f"static/{archivo.filename}"
+        try:
+            with open(path, "wb") as f:
+                f.write(await archivo.read())
+        except Exception as e:
+            errors.append(f"Error: {archivo.filename} - {e}\n")
+            continue
+    if len(errors) == 0:
+        mensaje = show_message("Se cargaron los archivos", "success")
+    else:
+        mensaje = show_message(
+            f"No se cargaron los siguientes archivos:\n {'\n'.join(errors)}", "danger"
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="cargar-documentos.tpl.html",
+        context={"user": user},
+        headers=mensaje,
     )
