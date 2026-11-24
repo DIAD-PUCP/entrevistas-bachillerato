@@ -5,6 +5,7 @@ from pwdlib import PasswordHash
 from sqlmodel import Session, column, func, select
 
 from src import models
+from src.tiempo import a_utc
 
 
 def get_usuario(db: Session, usuario_id: str) -> models.Usuario | None:
@@ -159,6 +160,8 @@ def get_all_fichas(db: Session) -> list[models.FichaCalificacion]:
 def create_ficha(
     db: Session, ficha: models.FichaCalificacion
 ) -> models.FichaCalificacion:
+    ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore[assignment]
+    ficha.fecha_calificacion = a_utc(ficha.fecha_calificacion)
     ficha_data = ficha.model_dump()
     f = models.FichaCalificacion.model_validate(ficha_data)
     db.add(f)
@@ -171,6 +174,8 @@ def create_fichas(
 ) -> list[models.FichaCalificacion]:
     fs = []
     for ficha in fichas:
+        ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore[assignment]
+        ficha.fecha_calificacion = a_utc(ficha.fecha_calificacion)
         ficha_data = ficha.model_dump()
         f = models.FichaCalificacion.model_validate(ficha_data)
         db.add(f)
@@ -185,6 +190,8 @@ def update_ficha(
     f = db.get(models.FichaCalificacion, ficha_id)
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
+    ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore[assignment]
+    ficha.fecha_calificacion = a_utc(ficha.fecha_calificacion)
     ficha_data = ficha.model_dump(exclude_unset=True)
     f.sqlmodel_update(ficha_data)
     db.add(f)
@@ -240,7 +247,7 @@ def get_reporte_progreso(db: Session):
                 "Calificado",
                 "Sin calificar",
             ).label("estado"),
-            func.count(models.FichaCalificacion.id).label("cantidad"),
+            func.count(models.FichaCalificacion.id).label("cantidad"),  # type: ignore
         ).group_by(models.FichaCalificacion.calificador_id, column("estado"))
     ).subquery()
     stmt2 = select(
@@ -255,7 +262,7 @@ def get_reporte_progreso(db: Session):
         stmt.c.cantidad,
     ).join(stmt)
     res = db.exec(stmt2).all()
-    result = dict()
+    result = {}
     for calificador, estado, cantidad in res:
         result.setdefault(calificador, {"Calificado": 0, "Sin calificar": 0}).update(
             {estado: cantidad}
@@ -270,13 +277,13 @@ def get_reporte_resultados(db: Session, downloads: bool = False):
     )
     if downloads:
         return (
-            select(models.FichaCalificacion, models.Usuario, models.Evaluado)
+            select(models.FichaCalificacion, models.Usuario, models.Evaluado)  # type: ignore
             .join(models.Evaluado)
             .join(models.Usuario)
             .with_only_columns(
                 (models.FichaCalificacion.id).label("Ficha"),  # type: ignore
                 (models.FichaCalificacion.evaluado_id).label("Evaluado"),  # type: ignore
-                models.Evaluado.carrera,  # type: ignore
+                models.Evaluado.carrera,
                 (
                     models.Usuario.apellido_paterno
                     + " "
@@ -284,12 +291,12 @@ def get_reporte_resultados(db: Session, downloads: bool = False):
                     + ", "
                     + models.Usuario.nombres
                 ).label("Calificador"),  # type: ignore
-                models.FichaCalificacion.criterio1,  # type: ignore
-                models.FichaCalificacion.criterio2,  # type: ignore
-                models.FichaCalificacion.criterio3,  # type: ignore
-                models.FichaCalificacion.criterio4,  # type: ignore
-                models.FichaCalificacion.comentario,  # type: ignore
-                models.FichaCalificacion.fecha_calificacion,  # type: ignore
+                models.FichaCalificacion.criterio1,
+                models.FichaCalificacion.criterio2,
+                models.FichaCalificacion.criterio3,
+                models.FichaCalificacion.criterio4,
+                models.FichaCalificacion.comentario,
+                models.FichaCalificacion.fecha_calificacion,
             )
         )
     else:
