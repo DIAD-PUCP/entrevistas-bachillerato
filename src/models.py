@@ -71,7 +71,7 @@ class FichaCalificacionBase(SQLModel):
     criterio2: Annotated[int | None, Field(gt=0, lt=5)] = None
     criterio3: Annotated[int | None, Field(gt=0, lt=5)] = None
     criterio4: Annotated[int | None, Field(gt=0, lt=5)] = None
-    comentario: str | None = None
+    comentario: str = ""
     fecha_calificacion: datetime | None = None
 
     @field_validator("fecha_calificacion", mode="before")
