@@ -123,7 +123,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
 
 
 async def get_current_user(
-    token: Annotated[str | None, Cookie()] = None, db: Session = Depends(get_session)
+    db: Annotated[Session, Depends(get_session)],
+    token: Annotated[str | None, Cookie()] = None,
 ) -> models.Usuario:
     credentials_exception = AuthException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -237,8 +238,8 @@ async def login(request: Request, target: str | None = None):
 @app.post("/login", response_class=HTMLResponse)
 async def login_for_access_token(
     login_data: Annotated[models.LoginData, Form()],
+    db: Annotated[Session, Depends(get_session)],
     target: Annotated[str, Query()] = "/",
-    db: Session = Depends(get_session),
 ):
     user = authenticate_user(db, login_data.email, login_data.password)
     if not user:
@@ -268,7 +269,7 @@ async def logout(request: Request):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(
-    request: Request, user: models.Usuario = Security(get_current_active_user)
+    request: Request, user: Annotated[models.Usuario, Security(get_current_active_user)]
 ):
     return templates.TemplateResponse(
         request=request, name="index.tpl.html", context={"user": user}
@@ -278,8 +279,8 @@ async def index(
 @app.get("/usuarios", response_class=HTMLResponse)
 async def get_usuarios(
     request: Request,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -298,8 +299,8 @@ async def get_usuarios(
 async def get_usuario(
     request: Request,
     user_id: str,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -325,8 +326,8 @@ async def get_usuario(
 async def nuevo_usuario(
     request: Request,
     usuario: Annotated[models.UsuarioCreate, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -355,8 +356,8 @@ async def actualizar_usuario(
     request: Request,
     user_id: str,
     usuario: Annotated[models.UsuarioUpdate, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -382,9 +383,9 @@ async def actualizar_usuario(
 @app.delete("/usuario/{user_id}", response_class=HTMLResponse)
 async def eliminar_usuario(
     user_id: str,
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
     redirect: Annotated[bool, Query()] = False,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -403,8 +404,8 @@ async def eliminar_usuario(
 async def listado_por_calificar(
     request: Request,
     user_id: str,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador" and user.id != user_id:
         raise HTTPException(
@@ -428,7 +429,7 @@ async def listado_por_calificar(
 
 @app.get("/por-calificar", response_class=HTMLResponse)
 async def listado_propios_por_calificar(
-    request: Request, user: models.Usuario = Security(get_current_active_user)
+    request: Request, user: Annotated[models.Usuario, Security(get_current_active_user)]
 ):
     fichas_pendientes = [
         ficha for ficha in user.fichas if ficha.fecha_calificacion is None
@@ -443,8 +444,8 @@ async def listado_propios_por_calificar(
 @app.get("/evaluados", response_class=HTMLResponse)
 async def get_evaluados(
     request: Request,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -463,8 +464,8 @@ async def get_evaluados(
 async def get_evaluado(
     request: Request,
     evaluado_id: str,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -502,8 +503,8 @@ async def save_file(file: UploadFile) -> str:
 async def nuevo_evaluado(
     request: Request,
     evaluado: Annotated[models.EvaluadoForm, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -529,8 +530,8 @@ async def actualizar_evaluado(
     request: Request,
     evaluado_id: str,
     evaluado: Annotated[models.EvaluadoForm, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -553,9 +554,9 @@ async def actualizar_evaluado(
 @app.delete("/evaluado/{evaluado_id}", response_class=HTMLResponse)
 async def eliminar_evaluado(
     evaluado_id: str,
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
     redirect: Annotated[bool, Query()] = False,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -573,8 +574,8 @@ async def eliminar_evaluado(
 @app.get("/fichas", response_class=HTMLResponse)
 async def get_fichas(
     request: Request,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -593,8 +594,8 @@ async def get_fichas(
 async def get_ficha(
     request: Request,
     ficha_id: str,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -627,8 +628,8 @@ async def get_ficha(
 async def nueva_ficha(
     request: Request,
     ficha: Annotated[models.FichaCalificacion, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -658,8 +659,8 @@ async def actualizar_ficha(
     request: Request,
     ficha_id: str,
     ficha: Annotated[models.FichaCalificacion, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -687,9 +688,9 @@ async def actualizar_ficha(
 @app.delete("/ficha/{ficha_id}", response_class=HTMLResponse)
 async def eliminar_ficha(
     ficha_id: str,
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
     redirect: Annotated[bool, Query()] = False,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -708,8 +709,8 @@ async def eliminar_ficha(
 async def ver_calificar_ficha(
     request: Request,
     ficha_id: str,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     ficha = crud.get_ficha(db, ficha_id)
     if not ficha:
@@ -734,8 +735,8 @@ async def calificar_ficha(
     request: Request,
     ficha_id: str,
     ficha: Annotated[models.FichaCalificacionBase, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     f = crud.calificar_ficha(db, ficha_id, ficha)
     if user.perfil != "Administrador" and user.id != f.calificador_id:
@@ -752,8 +753,8 @@ async def calificar_ficha(
 @app.get("/criterios", response_class=HTMLResponse)
 async def ver_criterios(
     request: Request,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -772,8 +773,8 @@ async def ver_criterios(
 async def actualizar_criterios(
     request: Request,
     criterios: Annotated[models.DescCriterios, Form()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -793,8 +794,8 @@ async def actualizar_criterios(
 @app.get("/reporte-estado", response_class=HTMLResponse)
 async def reporte_estado(
     request: Request,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -812,9 +813,9 @@ async def reporte_estado(
 @app.get("/reporte-resultados", response_class=HTMLResponse)
 async def get_resultados(
     request: Request,
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
     download: Annotated[bool, Query()] = False,
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -847,7 +848,7 @@ async def get_resultados(
 
 @app.get("/evaluados/importar", response_class=HTMLResponse)
 async def cargar_evaluados(
-    request: Request, user: models.Usuario = Security(get_current_active_user)
+    request: Request, user: Annotated[models.Usuario, Security(get_current_active_user)]
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -863,8 +864,8 @@ async def cargar_evaluados(
 async def importar_evaluados(
     request: Request,
     archivo: Annotated[UploadFile, File()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -888,7 +889,7 @@ async def importar_evaluados(
 
 @app.get("/usuarios/importar", response_class=HTMLResponse)
 async def cargar_usuarios(
-    request: Request, user: models.Usuario = Security(get_current_active_user)
+    request: Request, user: Annotated[models.Usuario, Security(get_current_active_user)]
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -904,8 +905,8 @@ async def cargar_usuarios(
 async def importar_usuarios(
     request: Request,
     archivo: Annotated[UploadFile, File()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -930,7 +931,7 @@ async def importar_usuarios(
 
 @app.get("/fichas/importar", response_class=HTMLResponse)
 async def cargar_fichas(
-    request: Request, user: models.Usuario = Security(get_current_active_user)
+    request: Request, user: Annotated[models.Usuario, Security(get_current_active_user)]
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -946,8 +947,8 @@ async def cargar_fichas(
 async def importar_fichas(
     request: Request,
     archivo: Annotated[UploadFile, File()],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    db: Annotated[Session, Depends(get_session)],
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -973,7 +974,7 @@ async def importar_fichas(
 
 @app.get("/cargar-documentos", response_class=HTMLResponse)
 async def form_cargar_documentos(
-    request: Request, user: models.Usuario = Security(get_current_active_user)
+    request: Request, user: Annotated[models.Usuario, Security(get_current_active_user)]
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -989,8 +990,7 @@ async def form_cargar_documentos(
 async def cargar_documentos(
     request: Request,
     archivos: Annotated[list[UploadFile], File(...)],
-    db: Session = Depends(get_session),
-    user: models.Usuario = Security(get_current_active_user),
+    user: Annotated[models.Usuario, Security(get_current_active_user)],
 ):
     if user.perfil != "Administrador":
         raise HTTPException(
@@ -1003,7 +1003,7 @@ async def cargar_documentos(
         try:
             async with aiofiles.open(path, "wb") as f:
                 await f.write(await archivo.read())
-        except Exception as e:
+        except (FileNotFoundError, FileExistsError, ValueError) as e:
             errors.append(f"Error: {archivo.filename} - {e}\n")
             continue
     if len(errors) == 0:
