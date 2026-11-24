@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional
+from datetime import UTC, datetime
 
 from fastapi import HTTPException
 from pwdlib import PasswordHash
@@ -8,7 +7,7 @@ from sqlmodel import Session, column, func, select
 from src import models
 
 
-def get_usuario(db: Session, usuario_id: str) -> Optional[models.Usuario]:
+def get_usuario(db: Session, usuario_id: str) -> models.Usuario | None:
     return db.get(models.Usuario, usuario_id)
 
 
@@ -18,11 +17,11 @@ def get_all_usuarios(db: Session) -> list[models.Usuario]:
 
 def get_usuarios_activos(db: Session) -> list[models.Usuario]:
     return list(
-        db.exec(select(models.Usuario).where(models.Usuario.activo == True)).all()  # noqa
+        db.exec(select(models.Usuario).where(models.Usuario.activo == True)).all()
     )
 
 
-def get_usuario_by_email(db: Session, email: str) -> Optional[models.Usuario]:
+def get_usuario_by_email(db: Session, email: str) -> models.Usuario | None:
     return db.exec(select(models.Usuario).where(models.Usuario.email == email)).first()
 
 
@@ -82,7 +81,7 @@ def delete_usuario(db: Session, usuario_id: str) -> None:
     db.commit()
 
 
-def get_evaluado(db: Session, evaluado_id: str) -> Optional[models.Evaluado]:
+def get_evaluado(db: Session, evaluado_id: str) -> models.Evaluado | None:
     return db.get(models.Evaluado, evaluado_id)
 
 
@@ -90,7 +89,7 @@ def get_evaluados(db: Session) -> list[models.Evaluado]:
     return list(db.exec(select(models.Evaluado)).all())
 
 
-def get_evaluado_by_doc(db: Session, doc: str) -> Optional[models.Evaluado]:
+def get_evaluado_by_doc(db: Session, doc: str) -> models.Evaluado | None:
     return db.exec(
         select(models.Evaluado).where(models.Evaluado.documento_identidad == doc)
     ).first()
@@ -143,7 +142,7 @@ def delete_evaluado(db: Session, evaluado_id: str) -> None:
     db.commit()
 
 
-def get_ficha(db: Session, ficha_id: str) -> Optional[models.FichaCalificacion]:
+def get_ficha(db: Session, ficha_id: str) -> models.FichaCalificacion | None:
     return db.get(models.FichaCalificacion, ficha_id)
 
 
@@ -208,14 +207,14 @@ def calificar_ficha(
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
     ficha_data = ficha.model_dump(exclude_unset=True)
-    ficha_data["fecha_calificacion"] = datetime.now()
+    ficha_data["fecha_calificacion"] = datetime.now(UTC)
     f.sqlmodel_update(ficha_data)
     db.add(f)
     db.commit()
     return f
 
 
-def get_decripciones_criterios(db: Session) -> Optional[models.DescCriterios]:
+def get_decripciones_criterios(db: Session) -> models.DescCriterios | None:
     return db.get(models.DescCriterios, 1)
 
 
@@ -237,7 +236,7 @@ def get_reporte_progreso(db: Session):
         select(
             models.FichaCalificacion.calificador_id,
             func.IIF(
-                models.FichaCalificacion.fecha_calificacion != None,  # noqa
+                models.FichaCalificacion.fecha_calificacion != None,
                 "Calificado",
                 "Sin calificar",
             ).label("estado"),
@@ -267,7 +266,7 @@ def get_reporte_progreso(db: Session):
 
 def get_reporte_resultados(db: Session, downloads: bool = False):
     stmt = select(models.FichaCalificacion).where(
-        models.FichaCalificacion.fecha_calificacion != None  # noqa
+        models.FichaCalificacion.fecha_calificacion != None
     )
     if downloads:
         return (
