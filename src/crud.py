@@ -160,7 +160,7 @@ def get_all_fichas(db: Session) -> list[models.FichaCalificacion]:
 def create_ficha(
     db: Session, ficha: models.FichaCalificacion
 ) -> models.FichaCalificacion:
-    ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore[assignment]
+    ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore
     ficha.fecha_calificacion = a_utc(ficha.fecha_calificacion)
     ficha_data = ficha.model_dump()
     f = models.FichaCalificacion.model_validate(ficha_data)
@@ -174,7 +174,7 @@ def create_fichas(
 ) -> list[models.FichaCalificacion]:
     fs = []
     for ficha in fichas:
-        ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore[assignment]
+        ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore
         ficha.fecha_calificacion = a_utc(ficha.fecha_calificacion)
         ficha_data = ficha.model_dump()
         f = models.FichaCalificacion.model_validate(ficha_data)
@@ -190,7 +190,7 @@ def update_ficha(
     f = db.get(models.FichaCalificacion, ficha_id)
     if not f:
         raise HTTPException(status_code=404, detail="No se encontró ficha")
-    ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore[assignment]
+    ficha.fecha_entrevista = a_utc(ficha.fecha_entrevista)  # type: ignore
     ficha.fecha_calificacion = a_utc(ficha.fecha_calificacion)
     ficha_data = ficha.model_dump(exclude_unset=True)
     f.sqlmodel_update(ficha_data)
