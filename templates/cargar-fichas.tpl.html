@@ -15,7 +15,7 @@
     <li><code>id</code> : Un identificador único de la ficha, usualmente se pone <code>CODIGO-APELLIDOS</code> como en el ejemplo</li>
     <li><code>calificador_id</code> : El id del calificador (usualmente su código PUCP)</li>
     <li><code>evaluado_id</code> : El id del evaluado (usualmente su código de postulante)</li>
-    <li><code>fecha_entrevista</code> : La fecha de la entrevista, debe tener el siguiente formato: <code>yyyy-mm-ddThh:mm:ss</code></li>
+    <li><code>fecha_entrevista</code> : La fecha de la entrevista en hora de Lima (-05:00), debe tener el siguiente formato: <code>yyyy-mm-ddThh:mm:ss</code></li>
 </ol>
 <form hx-boost="true" id="cargar-fichas" method="POST" enctype="multipart/form-data" action="/fichas/importar">
     <div class="row mb-3">

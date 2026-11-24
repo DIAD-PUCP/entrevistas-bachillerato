@@ -38,6 +38,7 @@ from starlette import status
 from starlette.exceptions import HTTPException
 
 from src import crud, models
+from src.tiempo import LIMA, a_lima
 
 load_dotenv()
 
@@ -186,6 +187,7 @@ app.mount(
     "/assets", StaticFiles(directory="assets", follow_symlink=True), name="assets"
 )
 templates = Jinja2Templates(directory="templates")
+templates.env.filters["lima"] = a_lima
 
 
 @app.exception_handler(AuthException)
@@ -821,6 +823,11 @@ async def get_resultados(
     fichas = crud.get_reporte_resultados(db, download)
     if download:
         df = pd.read_sql(fichas, db.bind)
+        df["fecha_calificacion"] = (
+            pd.to_datetime(df["fecha_calificacion"], utc=True)
+            .dt.tz_convert(LIMA)
+            .dt.tz_localize(None)
+        )
         buffer = BytesIO()
         with pd.ExcelWriter(buffer) as writer:
             df.to_excel(writer, index=False)

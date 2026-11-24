@@ -31,7 +31,7 @@
                 <td>{{ficha.criterio3}}</td>
                 <td>{{ficha.criterio4}}</td>
                 <td>{{ficha.comentario}}</td>
-                <td>{{ficha.fecha_calificacion}}</td>
+                <td>{{ (ficha.fecha_calificacion|lima).isoformat(timespec='minutes', sep=' ')[:-6] }}</td>
             </tr>
             {% else %}
             <tr><td colspan="11" class="text-center"> No hay datos</td></tr>
