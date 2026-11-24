@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 from io import BytesIO
 from typing import Annotated
 
+import aiofiles
 import jwt
 import pandas as pd
 from dotenv import load_dotenv
@@ -492,8 +493,8 @@ async def save_file(file: UploadFile) -> str:
         while os.path.exists(f"static/{filename}{filext}"):
             filename = filename + "_1"
         path = f"static/{filename}{filext}"
-        with open(path, "wb") as f:
-            f.write(await file.read())
+        async with aiofiles.open(path, "wb") as f:
+            await f.write(await file.read())
     return "/" + path
 
 
@@ -1000,8 +1001,8 @@ async def cargar_documentos(
     for archivo in archivos:
         path = f"static/{archivo.filename}"
         try:
-            with open(path, "wb") as f:
-                f.write(await archivo.read())
+            async with aiofiles.open(path, "wb") as f:
+                await f.write(await archivo.read())
         except Exception as e:
             errors.append(f"Error: {archivo.filename} - {e}\n")
             continue
