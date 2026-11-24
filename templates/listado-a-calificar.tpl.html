@@ -9,6 +9,7 @@
                 <th>Apellido materno</th>
                 <th>Nombres</th>
                 <th>Especialidad</th>
+                <th>Fecha y hora</th>
                 <th>Entrevista</th>
             </tr>
         </thead>
@@ -21,6 +22,7 @@
                 <td>{{evaluado.apellido_materno}}</td>
                 <td>{{evaluado.nombres}}</td>
                 <td>{{evaluado.carrera}}</td>
+                <td>{{ficha.fecha_entrevista.isoformat(timespec='seconds',sep=' ')[:-6]}}</td>
                 <td><a class="btn btn-sm btn-primary" href="/ficha/{{ficha.id}}/calificar">Entrevista</a></td>
             </tr>
             {% else %}
