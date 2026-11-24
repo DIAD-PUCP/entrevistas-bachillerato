@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 from fastapi import UploadFile
 from pydantic import BaseModel, EmailStr, field_validator
@@ -13,12 +13,12 @@ class LoginData(BaseModel):
 
 class UsuarioBase(SQLModel):
     id: Annotated[str, Field(primary_key=True, min_length=1)]
-    nombres: Annotated[str, Field(min_length=1)]
-    apellido_paterno: Annotated[str, Field(min_length=1)]
-    apellido_materno: Annotated[str, Field(min_length=1)]
-    email: Annotated[EmailStr, Field(unique=True, index=True)]
+    nombres: Annotated[str | None, Field(min_length=1)]
+    apellido_paterno: Annotated[str | None, Field(min_length=1)]
+    apellido_materno: Annotated[str | None, Field(min_length=1)]
+    email: Annotated[EmailStr | None, Field(unique=True, index=True)]
     activo: bool = False
-    perfil: str = "Calificador"
+    perfil: str | None = "Calificador"
 
 
 class UsuarioCreate(UsuarioBase):
@@ -27,14 +27,14 @@ class UsuarioCreate(UsuarioBase):
 
 
 class UsuarioUpdate(UsuarioBase):
-    nombres: Optional[str] = None
-    apellido_paterno: Optional[str] = None
-    apellido_materno: Optional[str] = None
-    email: Optional[EmailStr] = None
+    nombres: str | None = None
+    apellido_paterno: str | None = None
+    apellido_materno: str | None = None
+    email: EmailStr | None = None
     activo: bool = False
-    perfil: Optional[str] = None
-    password: Optional[str] = None
-    password_confirm: Optional[str] = None
+    perfil: str | None = None
+    password: str | None = None
+    password_confirm: str | None = None
 
 
 class Usuario(UsuarioBase, table=True):
@@ -62,17 +62,17 @@ class Evaluado(EvaluadoBase, table=True):
 
 
 class EvaluadoForm(EvaluadoBase):
-    ensayo: Optional[str] = None
-    archivo: Optional[UploadFile] = None
+    ensayo: str | None = None
+    archivo: UploadFile | None = None
 
 
 class FichaCalificacionBase(SQLModel):
-    criterio1: Annotated[Optional[int], Field(gt=0, lt=5)] = None
-    criterio2: Annotated[Optional[int], Field(gt=0, lt=5)] = None
-    criterio3: Annotated[Optional[int], Field(gt=0, lt=5)] = None
-    criterio4: Annotated[Optional[int], Field(gt=0, lt=5)] = None
-    comentario: Optional[str] = None
-    fecha_calificacion: Optional[datetime] = None
+    criterio1: Annotated[int | None, Field(gt=0, lt=5)] = None
+    criterio2: Annotated[int | None, Field(gt=0, lt=5)] = None
+    criterio3: Annotated[int | None, Field(gt=0, lt=5)] = None
+    criterio4: Annotated[int | None, Field(gt=0, lt=5)] = None
+    comentario: str | None = None
+    fecha_calificacion: datetime | None = None
 
     @field_validator("fecha_calificacion", mode="before")
     @classmethod
