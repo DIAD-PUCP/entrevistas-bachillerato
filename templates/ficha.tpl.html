@@ -41,7 +41,7 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="fecha_entrevista" class="form-label">Fecha de entrevista:</label>
-            <input id="fecha_entrevista" class="form-control" type="datetime-local" name="fecha_entrevista" value="{% if ficha %}{{ficha.fecha_entrevista}}{% endif %}" required>
+            <input id="fecha_entrevista" class="form-control" type="datetime-local" name="fecha_entrevista" value="{% if ficha %}{{ficha.fecha_entrevista.isoformat(timespec='seconds')[:-6]}}{% endif %}" required>
         </div>
     </div>
     {% for i in ["1_1","1_2","1_3","comentario1","2_1","comentario2","3_1","3_2","3_3","comentario3","4_1","4_2","4_3","4_4","comentario4","5_1","5_2","comentario5","6_1","6_2","6_3","comentario6"] %}
@@ -74,7 +74,7 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="fecha_calificacion" class="form-label">Fecha de calificacion:</label>
-            <input id="fecha_calificacion" class="form-control" type="datetime-local" name="fecha_calificacion" value="{% if ficha and ficha.fecha_calificacion %}{{ficha.fecha_calificacion.isoformat(timespec='seconds')}}{% endif %}">
+            <input id="fecha_calificacion" class="form-control" type="datetime-local" name="fecha_calificacion" value="{% if ficha and ficha.fecha_calificacion %}{{ficha.fecha_calificacion.isoformat(timespec='seconds')[:-6]}}{% endif %}">
         </div>
     </div>
     <div class="container d-flex justify-content-center">

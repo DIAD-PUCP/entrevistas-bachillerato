@@ -1,9 +1,9 @@
 import json
 import os
 import os.path
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from io import BytesIO
-from typing import Annotated, Optional
+from typing import Annotated
 
 import jwt
 import pandas as pd
@@ -130,16 +130,16 @@ async def lifespan(_: FastAPI):
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(UTC) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 async def get_current_user(
-    token: Annotated[Optional[str], Cookie()] = None, db: Session = Depends(get_session)
+    token: Annotated[str | None, Cookie()] = None, db: Session = Depends(get_session)
 ) -> models.Usuario:
     credentials_exception = AuthException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -243,7 +243,7 @@ async def validation_handler(exc: RequestValidationError):
 
 
 @app.get("/login", response_class=HTMLResponse)
-async def login(request: Request, target: Optional[str] = None):
+async def login(request: Request, target: str | None = None):
     return templates.TemplateResponse(
         request=request, name="login.tpl.html", context={"target": target}
     )
